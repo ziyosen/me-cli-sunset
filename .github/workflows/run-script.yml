@@ -29,8 +29,12 @@ jobs:
         pip install -r requirements.txt
 
     - name: Create .env file
+      env:
+        
+        RAW_ENV: ${{ secrets.ENV_FILE }}
       run: |
-        echo "${{ secrets.ENV_FILE }}" > .env
-
+        cat << 'EOF' > .env
+        $RAW_ENV
+        EOF
     - name: Run Script
       run: python main.py
