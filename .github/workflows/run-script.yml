@@ -33,4 +33,4 @@ jobs:
           python -c "import os; open('.env', 'w').write(os.environ['RAW_ENV'])"
       
       - name: Run Script
-        run: python run-web.py
+        run: python main.py
