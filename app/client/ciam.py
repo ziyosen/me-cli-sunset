@@ -22,7 +22,30 @@ if not BASE_CIAM_URL:
 BASIC_AUTH = os.getenv("BASIC_AUTH")
 AX_DEVICE_ID = ax_device_id()
 AX_FP = load_ax_fp()
-UA = os.getenv("UA")
+UA_raw = os.getenv("UA")
+
+# ========== FUNGSI PEMBERSIH HEADER ==========
+def clean_header_value(val: str) -> str:
+    """
+    Membersihkan karakter ilegal dalam header value.
+    Hanya memperbolehkan karakter printable ASCII (32-126) dan tab (9).
+    """
+    if not val:
+        return ""
+    # Hanya pertahankan karakter yang diizinkan
+    cleaned = ''.join(ch for ch in val if 32 <= ord(ch) <= 126 or ch == '\t')
+    return cleaned.strip()
+
+# Bersihkan UA, jika kosong gunakan default
+UA = clean_header_value(UA_raw)
+if not UA:
+    UA = "myXL/8.9.0 (Android 13; SM-N935F)"  # fallback aman
+
+# Bersihkan juga nilai lain yang mungkin digunakan di header
+BASIC_AUTH = clean_header_value(BASIC_AUTH) if BASIC_AUTH else ""
+AX_DEVICE_ID = clean_header_value(AX_DEVICE_ID) if AX_DEVICE_ID else ""
+AX_FP = clean_header_value(AX_FP) if AX_FP else ""
+# ============================================
 
 def validate_contact(contact: str) -> bool:
     if not contact.startswith("628") or len(contact) > 14:
@@ -62,6 +85,11 @@ def get_otp(contact: str) -> str:
         "User-Agent": UA,
     }
 
+    # Bersihkan semua nilai header (pencegahan ekstra)
+    for key, value in headers.items():
+        if isinstance(value, str):
+            headers[key] = clean_header_value(value)
+
     print("Requesting OTP...")
     try:
         response = requests.request("GET", url, data=payload, headers=headers, params=querystring, timeout=30)
@@ -87,7 +115,7 @@ def extend_session(subscriber_id: str) -> str:
     }
     
     now = datetime.now(timezone(timedelta(hours=7)))
-    ax_request_at = java_like_timestamp(now)  # format: "2023-10-20T12:34:56.78+07:00"
+    ax_request_at = java_like_timestamp(now)
     ax_request_id = str(uuid.uuid4())
     
     headers = {
@@ -104,6 +132,10 @@ def extend_session(subscriber_id: str) -> str:
         "Host": BASE_CIAM_URL.replace("https://", ""),
         "User-Agent": UA,
     }
+
+    for key, value in headers.items():
+        if isinstance(value, str):
+            headers[key] = clean_header_value(value)
     
     print("Extending session...")
     try:
@@ -170,6 +202,10 @@ def submit_otp(
         "User-Agent": UA,
     }
 
+    for key, value in headers.items():
+        if isinstance(value, str):
+            headers[key] = clean_header_value(value)
+
     print("Submitting OTP...")
     try:
         response = requests.post(url, data=payload, headers=headers, timeout=30)
@@ -205,6 +241,10 @@ def get_new_token(api_key: str, refresh_token: str, subscriber_id: str) -> str:
         "ax-substype": "PREPAID",
         "content-type": "application/x-www-form-urlencoded"
     }
+
+    for key, value in headers.items():
+        if isinstance(value, str):
+            headers[key] = clean_header_value(value)
 
     data = {
         "grant_type": "refresh_token",
@@ -275,6 +315,10 @@ def get_auth_code(tokens: dict, pin: str, msisdn: str):
         "Content-Type": "application/json",
     }
 
+    for key, value in headers.items():
+        if isinstance(value, str):
+            headers[key] = clean_header_value(value)
+
     pin_b64 = base64.b64encode(pin.encode("utf-8")).decode("utf-8")
 
     body = {
@@ -288,7 +332,6 @@ def get_auth_code(tokens: dict, pin: str, msisdn: str):
     except requests.RequestException as e:
         print(f"[get_auth_code] Request error: {e}")
         return None
-
 
     if resp.status_code != 200:
         print(f"Failed to get auth code: {resp.status_code} - {resp.text}")
