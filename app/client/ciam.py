@@ -23,11 +23,10 @@ BASIC_AUTH = os.getenv("BASIC_AUTH")
 # AX_DEVICE_ID and AX_FP are fetched per-call (depend on CWD-relative ax.fp file).
 # Helpers below give us a (device_id, fingerprint) pair with a single file read.
 
-# --- PERBAIKAN DI SINI ---
-# Mengambil UA dari .env lalu membersihkan paksa karakter \n, \r, dan spasi ganda yang merusak header.
+# --- PERBAIKAN UA ---
 RAW_UA = os.getenv("UA") or "myXL / 8.9.0(1202); com.android.vending; (samsung; SM-N935F; SDK 33; Android 13)"
 UA = " ".join(RAW_UA.replace("\n", " ").replace("\r", " ").split())
-# -------------------------
+# ---------------------
 
 def _fp_pair():
     fp = load_ax_fp()
@@ -97,7 +96,7 @@ def extend_session(subscriber_id: str) -> str:
     }
     
     now = datetime.now(timezone(timedelta(hours=7)))
-    ax_request_at = java_like_timestamp(now)  # format: "2023-10-20T12:34:56.78+07:00"
+    ax_request_at = java_like_timestamp(now)
     ax_request_id = str(uuid.uuid4())
     
     headers = {
@@ -157,9 +156,13 @@ def submit_otp(
 
     url = BASE_CIAM_URL + "/realms/xl-ciam/protocol/openid-connect/token"
 
+    # --- PERBAIKAN STRUKTUR WAKTU DI SINI ---
     now_gmt7 = datetime.now(timezone(timedelta(hours=7)))
+    
+    # Menyamakan fungsi penentu waktu dengan format request OTP yang sukses
     ts_for_sign = ts_gmt7_without_colon(now_gmt7)
-    ts_header = ts_gmt7_without_colon(now_gmt7 - timedelta(minutes=5))
+    ts_header = java_like_timestamp(now_gmt7) 
+    
     signature = ax_api_signature(api_key, ts_for_sign, final_contact, code, contact_type)
 
     payload = f"contactType={contact_type}&code={final_code}&grant_type=password&contact={final_contact}&scope=openid"
@@ -198,7 +201,7 @@ def get_new_token(api_key: str, refresh_token: str, subscriber_id: str) -> str:
     url = BASE_CIAM_URL + "/realms/xl-ciam/protocol/openid-connect/token"
 
     now = datetime.now(timezone(timedelta(hours=7)))
-    ax_request_at = now.strftime("%Y-%m-%dT%H:%M:%S.%f")[:-3] + "+0700"
+    ax_request_at = java_like_timestamp(now)
     ax_request_id = str(uuid.uuid4())
 
     headers = {
@@ -267,7 +270,7 @@ def get_auth_code(tokens: dict, pin: str, msisdn: str):
     host_header = parsed.netloc or BASE_CIAM_URL.replace("https://", "")
 
     now = datetime.now(timezone(timedelta(hours=7)))
-    ax_request_at = now.strftime("%Y-%m-%dT%H:%M:%S.%f")[:-3] + "+0700"
+    ax_request_at = java_like_timestamp(now)
     ax_request_id = str(uuid.uuid4())
 
     headers = {
