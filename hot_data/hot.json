@@ -8,19 +8,219 @@
         "order": 6
     },
     {
-        "family_name": "Newcomer Promo",
-        "family_code": "6bc5a34d-7901-4bf9-8629-5bd7de28c89f",
+        "family_name": "Xtra Combo Plus",
+        "family_code": "23b71540-8785-4abe-816d-e9b4efa48f95",
         "is_enterprise": false,
-        "variant_name": "Xtra Combo",
-        "option_name": "1GB + 1GB",
+        "variant_name": "Reguler",
+        "option_name": "5GB",
+        "order": 21
+    },
+    {
+        "family_name": "XTRA Combo",
+        "family_code": "6fda76ee-e789-4897-89fb-9114da47b805",
+        "is_enterprise": false,
+        "variant_name": "Special For You",
+        "option_name": "10GB+10GB",
+        "order": 18
+    },
+    {
+        "family_name": "Xtra Combo Plus",
+        "family_code": "23b71540-8785-4abe-816d-e9b4efa48f95",
+        "is_enterprise": false,
+        "variant_name": "Reguler",
+        "option_name": "5gb",
+        "order": 17
+    },
+    {
+        "family_name": "XTRA Combo",
+        "family_code": "6fda76ee-e789-4897-89fb-9114da47b805",
+        "is_enterprise": false,
+        "variant_name": "Special For You",
+        "option_name": "10GB+10GB",
+        "order": 44
+    },
+    {
+        "family_name": "Bebas Puas - 10GB",
+        "family_code": "eb2f99e5-4fa3-4f34-951f-6769ec9e38a1",
+        "is_enterprise": false,
+        "variant_name": "Bebas Puas",
+        "option_name": "10GB",
+        "order": 15
+    },
+    {
+        "family_name": "Akrab - 15GB for 2 Members",
+        "family_code": "6e469cb2-443d-402f-ba77-681b032ead6a",
+        "is_enterprise": false,
+        "variant_name": "Akrab",
+        "option_name": "16GB",
+        "order": 12
+    },
+    {
+        "family_name": "Kuota Aplikasi Xtra Combo Plus 10GB",
+        "family_code": "7658c955-a0b9-405f-bb17-de7f43d1a946",
+        "is_enterprise": false,
+        "variant_name": "Bonus Xtra Combo Plus 10GB",
+        "option_name": "Games",
         "order": 1
     },
     {
-        "family_name": "Video & Music",
-        "family_code": "b50cef3e-fcd0-4699-83a9-6f5740b7ef31",
+        "family_name": "Kuota Aplikasi Xtra Combo Plus 10GB",
+        "family_code": "7658c955-a0b9-405f-bb17-de7f43d1a946",
         "is_enterprise": false,
-        "variant_name": "Vidio",
-        "option_name": "Vidio",
+        "variant_name": "Bonus Xtra Combo Plus 10GB",
+        "option_name": "10GB",
+        "order": 2
+    },
+    {
+        "family_name": "Kuota Aplikasi Xtra Combo Plus 10GB",
+        "family_code": "7658c955-a0b9-405f-bb17-de7f43d1a946",
+        "is_enterprise": false,
+        "variant_name": "Bonus Xtra Combo Plus 10GB",
+        "option_name": "WhatsApp",
+        "order": 4
+    },
+    {
+        "family_name": "Kuota Aplikasi Xtra Combo Plus 10GB",
+        "family_code": "7658c955-a0b9-405f-bb17-de7f43d1a946",
+        "is_enterprise": false,
+        "variant_name": "Bonus Xtra Combo Plus 10GB",
+        "option_name": "Instagram",
+        "order": 6
+    },
+    {
+        "family_name": "Kuota Aplikasi Xtra Combo Plus 10GB",
+        "family_code": "7658c955-a0b9-405f-bb17-de7f43d1a946",
+        "is_enterprise": false,
+        "variant_name": "Bonus Xtra Combo Plus 10GB",
+        "option_name": "Facebook",
+        "order": 7
+    },
+    {
+        "family_name": "Kuota Aplikasi Xtra Combo Plus 10GB",
+        "family_code": "7658c955-a0b9-405f-bb17-de7f43d1a946",
+        "is_enterprise": false,
+        "variant_name": "Bonus Xtra Combo Plus 10GB",
+        "option_name": "YouTube",
+        "order": 8
+    },
+    {
+        "family_name": "Kuota Aplikasi Xtra Combo Plus 10GB",
+        "family_code": "7658c955-a0b9-405f-bb17-de7f43d1a946",
+        "is_enterprise": false,
+        "variant_name": "Bonus Xtra Combo Plus 10GB",
+        "option_name": "TikTok",
+        "order": 9
+    },
+    {
+        "family_name": "Kuota Aplikasi Xtra Combo Plus 15GB",
+        "family_code": "45c3a622-8c06-4bb1-8e56-bba1f3434600",
+        "is_enterprise": false,
+        "variant_name": "Bonus Xtra Combo Plus 15GB",
+        "option_name": "Games",
+        "order": 1
+    },
+    {
+        "family_name": "Kuota Aplikasi Xtra Combo Plus 15GB",
+        "family_code": "45c3a622-8c06-4bb1-8e56-bba1f3434600",
+        "is_enterprise": false,
+        "variant_name": "Bonus Xtra Combo Plus 15GB",
+        "option_name": "15GB",
+        "order": 2
+    },
+    {
+        "family_name": "Kuota Aplikasi Xtra Combo Plus 15GB",
+        "family_code": "45c3a622-8c06-4bb1-8e56-bba1f3434600",
+        "is_enterprise": false,
+        "variant_name": "Bonus Xtra Combo Plus 15GB",
+        "option_name": "Streaming",
+        "order": 3
+    },
+    {
+        "family_name": "Kuota Aplikasi Xtra Combo Plus 15GB",
+        "family_code": "45c3a622-8c06-4bb1-8e56-bba1f3434600",
+        "is_enterprise": false,
+        "variant_name": "Bonus Xtra Combo Plus 15GB",
+        "option_name": "WhatsApp",
+        "order": 4
+    },
+    {
+        "family_name": "Kuota Aplikasi Xtra Combo Plus 15GB",
+        "family_code": "45c3a622-8c06-4bb1-8e56-bba1f3434600",
+        "is_enterprise": false,
+        "variant_name": "Bonus Xtra Combo Plus 15GB",
+        "option_name": "Instagram",
+        "order": 5
+    },
+    {
+        "family_name": "Kuota Aplikasi Xtra Combo Plus 15GB",
+        "family_code": "45c3a622-8c06-4bb1-8e56-bba1f3434600",
+        "is_enterprise": false,
+        "variant_name": "Bonus Xtra Combo Plus 15GB",
+        "option_name": "Facebook",
+        "order": 6
+    },
+    {
+        "family_name": "Kuota Aplikasi Xtra Combo Plus 15GB",
+        "family_code": "45c3a622-8c06-4bb1-8e56-bba1f3434600",
+        "is_enterprise": false,
+        "variant_name": "Bonus Xtra Combo Plus 15GB",
+        "option_name": "YouTube",
+        "order": 7
+    },
+    {
+        "family_name": "Kuota Aplikasi Xtra Combo Plus 15GB",
+        "family_code": "45c3a622-8c06-4bb1-8e56-bba1f3434600",
+        "is_enterprise": false,
+        "variant_name": "Bonus Xtra Combo Plus 15GB",
+        "option_name": "TikTok",
+        "order": 8
+    },
+    {
+        "family_name": "Bebas Puas - 6GB",
+        "family_code": "eb2f99e5-4fa3-4f34-951f-6769ec9e38a1",
+        "is_enterprise": false,
+        "variant_name": "Bebas Puas",
+        "option_name": "6GB",
+        "order": 21
+    },
+    {
+        "family_name": "Akrab - 15GB for 2 Members",
+        "family_code": "6e469cb2-443d-402f-ba77-681b032ead6a",
+        "is_enterprise": false,
+        "variant_name": "Akrab",
+        "option_name": "15GB",
+        "order": 6
+    },
+    {
+        "family_name": "Bebas Puas - 56GB",
+        "family_code": "eb2f99e5-4fa3-4f34-951f-6769ec9e38a1",
+        "is_enterprise": false,
+        "variant_name": "Bebas Puas",
+        "option_name": "56GB",
+        "order": 27
+    },
+    {
+        "family_name": "Xtra Combo Plus",
+        "family_code": "23b71540-8785-4abe-816d-e9b4efa48f95",
+        "is_enterprise": false,
+        "variant_name": "Reguler",
+        "option_name": "5gb",
+        "order": 18
+    },
+    {
+        "family_name": "Xtra Combo Plus",
+        "family_code": "e0f9605b-5dad-486e-a378-cf40d5b7f2ba",
+        "is_enterprise": false,
+        "variant_name": "Regular",
+        "option_name": "33GB",
+        "order": 5
+    },
+    {
+        "family_name": "HYFE",
+        "family_code": "57d38719-1f39-4eda-8137-270df918cbe5",
+        "is_enterprise": false,
+        "variant_name": "HYFE",
+        "option_name": "FUP 50GB",
         "order": 1
     }
 ]
