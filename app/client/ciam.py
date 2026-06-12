@@ -22,7 +22,12 @@ if not BASE_CIAM_URL:
 BASIC_AUTH = os.getenv("BASIC_AUTH")
 # AX_DEVICE_ID and AX_FP are fetched per-call (depend on CWD-relative ax.fp file).
 # Helpers below give us a (device_id, fingerprint) pair with a single file read.
-UA = os.getenv("UA")
+
+# --- PERBAIKAN DI SINI ---
+# Mengambil UA dari .env lalu membersihkan paksa karakter \n, \r, dan spasi ganda yang merusak header.
+RAW_UA = os.getenv("UA") or "myXL / 8.9.0(1202); com.android.vending; (samsung; SM-N935F; SDK 33; Android 13)"
+UA = " ".join(RAW_UA.replace("\n", " ").replace("\r", " ").split())
+# -------------------------
 
 def _fp_pair():
     fp = load_ax_fp()
@@ -138,7 +143,6 @@ def submit_otp(
         if not validate_contact(contact):
             print("Invalid number")
             return None
-        final_contact = contact
     
         if not code or len(code) != 6:
             print("Invalid OTP code format")
@@ -293,7 +297,6 @@ def get_auth_code(tokens: dict, pin: str, msisdn: str):
     except requests.RequestException as e:
         print(f"[get_auth_code] Request error: {e}")
         return None
-
 
     if resp.status_code != 200:
         print(f"Failed to get auth code: {resp.status_code} - {resp.text}")
