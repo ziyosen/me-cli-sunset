@@ -22,12 +22,7 @@ if not BASE_CIAM_URL:
 BASIC_AUTH = os.getenv("BASIC_AUTH")
 AX_DEVICE_ID = ax_device_id()
 AX_FP = load_ax_fp()
-
-# --- PERBAIKAN AMAN UNTUK CODESPACE ---
-# Membersihkan spasi liar dan karakter \n \r dari .env tanpa mengubah isi teks User-Agent asli
-RAW_UA = os.getenv("UA") or "myXL / 8.9.0(1202); com.android.vending; (samsung; SM-N935F; SDK 33; Android 13)"
-UA = " ".join(RAW_UA.replace("\n", " ").replace("\r", " ").split())
-# --------------------------------------
+UA = os.getenv("UA")
 
 def validate_contact(contact: str) -> bool:
     if not contact.startswith("628") or len(contact) > 14:
@@ -155,10 +150,7 @@ def submit_otp(
 
     now_gmt7 = datetime.now(timezone(timedelta(hours=7)))
     ts_for_sign = ts_gmt7_without_colon(now_gmt7)
-    
-    # Menjaga logika asli author (-5 menit) tetapi pastikan formatnya seragam
     ts_header = ts_gmt7_without_colon(now_gmt7 - timedelta(minutes=5))
-    
     signature = ax_api_signature(api_key, ts_for_sign, final_contact, code, contact_type)
 
     payload = f"contactType={contact_type}&code={final_code}&grant_type=password&contact={final_contact}&scope=openid"
@@ -296,6 +288,7 @@ def get_auth_code(tokens: dict, pin: str, msisdn: str):
     except requests.RequestException as e:
         print(f"[get_auth_code] Request error: {e}")
         return None
+
 
     if resp.status_code != 200:
         print(f"Failed to get auth code: {resp.status_code} - {resp.text}")
