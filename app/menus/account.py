@@ -22,12 +22,12 @@ def login_prompt(api_key: str):
 
     if not phone_number.startswith("628") or len(phone_number) < 10 or len(phone_number) > 14:
         print("Nomor tidak valid. Pastikan nomor diawali dengan '628' dan memiliki panjang yang benar.")
-        return None
+        return None, None
 
     try:
         subscriber_id = get_otp(phone_number)
         if not subscriber_id:
-            return None
+            return None, None
         print("OTP Berhasil dikirim ke nomor Anda.")
         
         try_count = 5
@@ -50,7 +50,8 @@ def login_prompt(api_key: str):
         print("Gagal login setelah beberapa percobaan. Silahkan coba lagi nanti.")
         return None, None
     except Exception as e:
-        print(f"Gagal login: {e}")
+        # Menghindari error .encode() jika 'e' bertipe non-string/None
+        print(f"Gagal login: {str(e)}")
         return None, None
 
 def show_account_menu():
@@ -65,17 +66,22 @@ def show_account_menu():
         clear_screen()
         print("-------------------------------------------------------")
         if AuthInstance.get_active_user() is None or add_user:
-            number, refresh_token = login_prompt(AuthInstance.api_key)
-            if not refresh_token:
-                print("Gagal menambah akun. Silahkan coba lagi.")
+            # Mengamankan hasil login_prompt agar tidak memicu unpacking error
+            login_res = login_prompt(AuthInstance.api_key)
+            
+            if login_res is None or login_res[1] is None:
+                print("Gagal menambah akun atau sesi login dibatalkan.")
                 pause()
+                if add_user:
+                    add_user = False
                 continue
+            
+            number, refresh_token = login_res
             
             AuthInstance.add_refresh_token(int(number), refresh_token)
             AuthInstance.load_tokens()
             users = AuthInstance.refresh_tokens
             active_user = AuthInstance.get_active_user()
-            
             
             if add_user:
                 add_user = False
