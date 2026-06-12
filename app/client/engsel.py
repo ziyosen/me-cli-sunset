@@ -15,7 +15,19 @@ from app.client.encrypt import (
 BASE_API_URL = os.getenv("BASE_API_URL")
 if not BASE_API_URL:
     raise ValueError("BASE_API_URL environment variable not set")
-UA = os.getenv("UA")
+
+def clean_header_value(val: str) -> str:
+    """Bersihkan header value dari karakter ilegal (0x00-0x1F, 0x7F, dan non-ASCII)"""
+    if not val:
+        return ""
+    # Hanya izinkan karakter printable ASCII (32-126) dan tab (9)
+    return ''.join(ch for ch in val if 32 <= ord(ch) <= 126 or ch == '\t')
+
+# Ambil UA dari environment, bersihkan, dan jika kosong pakai default
+UA_raw = os.getenv("UA", "")
+UA = clean_header_value(UA_raw)
+if not UA:
+    UA = "myXL/8.9.0 (Android 13; SM-N935F)"  # fallback aman
 
 def send_api_request(
     api_key: str,
@@ -40,10 +52,14 @@ def send_api_request(
     body = encrypted_payload["encrypted_body"]
     x_sig = encrypted_payload["x_signature"]
     
+    # Pastikan semua nilai header bersih
+    host_value = BASE_API_URL.replace("https://", "")
+    host_value = clean_header_value(host_value)
+    
     headers = {
-        "host": BASE_API_URL.replace("https://", ""),
+        "host": host_value,
         "content-type": "application/json; charset=utf-8",
-        "user-agent": UA,
+        "user-agent": UA,  # sudah dibersihkan
         "x-api-key": API_KEY,
         "authorization": f"Bearer {id_token}",
         "x-hv": "v3",
@@ -57,6 +73,7 @@ def send_api_request(
     url = f"{BASE_API_URL}/{path}"
     resp = requests.post(url, headers=headers, data=json.dumps(body), timeout=30)
     
+    # Untuk debugging (bisa dihapus jika sudah yakin)
     # print(f"Headers: {json.dumps(headers, indent=2)}")
     # print(f"Response body: {resp.text}")
 
