@@ -20,18 +20,14 @@ if not BASE_CIAM_URL:
     raise ValueError("BASE_CIAM_URL environment variable not set")
 
 BASIC_AUTH = os.getenv("BASIC_AUTH")
-# AX_DEVICE_ID and AX_FP are fetched per-call (depend on CWD-relative ax.fp file).
-# Helpers below give us a (device_id, fingerprint) pair with a single file read.
+AX_DEVICE_ID = ax_device_id()
+AX_FP = load_ax_fp()
 
-# --- PERBAIKAN UA ---
+# --- PERBAIKAN AMAN UNTUK CODESPACE ---
+# Membersihkan spasi liar dan karakter \n \r dari .env tanpa mengubah isi teks User-Agent asli
 RAW_UA = os.getenv("UA") or "myXL / 8.9.0(1202); com.android.vending; (samsung; SM-N935F; SDK 33; Android 13)"
 UA = " ".join(RAW_UA.replace("\n", " ").replace("\r", " ").split())
-# ---------------------
-
-def _fp_pair():
-    fp = load_ax_fp()
-    import hashlib as _h
-    return _h.md5(fp.encode("utf-8")).hexdigest(), fp
+# --------------------------------------
 
 def validate_contact(contact: str) -> bool:
     if not contact.startswith("628") or len(contact) > 14:
@@ -59,8 +55,8 @@ def get_otp(contact: str) -> str:
     headers = {
         "Accept-Encoding": "gzip, deflate, br",
         "Authorization": f"Basic {BASIC_AUTH}",
-        "Ax-Device-Id": _fp_pair()[0],
-        "Ax-Fingerprint": _fp_pair()[1],
+        "Ax-Device-Id": AX_DEVICE_ID,
+        "Ax-Fingerprint": AX_FP,
         "Ax-Request-At": ax_request_at,
         "Ax-Request-Device": "samsung",
         "Ax-Request-Device-Model": "SM-N935F",
@@ -96,14 +92,14 @@ def extend_session(subscriber_id: str) -> str:
     }
     
     now = datetime.now(timezone(timedelta(hours=7)))
-    ax_request_at = java_like_timestamp(now)
+    ax_request_at = java_like_timestamp(now)  # format: "2023-10-20T12:34:56.78+07:00"
     ax_request_id = str(uuid.uuid4())
     
     headers = {
         "Accept-Encoding": "gzip, deflate, br",
         "Authorization": f"Basic {BASIC_AUTH}",
-        "Ax-Device-Id": _fp_pair()[0],
-        "Ax-Fingerprint": _fp_pair()[1],
+        "Ax-Device-Id": AX_DEVICE_ID,
+        "Ax-Fingerprint": AX_FP,
         "Ax-Request-At": ax_request_at,
         "Ax-Request-Device": "samsung",
         "Ax-Request-Device-Model": "SM-N935F",
@@ -142,6 +138,7 @@ def submit_otp(
         if not validate_contact(contact):
             print("Invalid number")
             return None
+        final_contact = contact
     
         if not code or len(code) != 6:
             print("Invalid OTP code format")
@@ -156,12 +153,11 @@ def submit_otp(
 
     url = BASE_CIAM_URL + "/realms/xl-ciam/protocol/openid-connect/token"
 
-    # --- PERBAIKAN STRUKTUR WAKTU DI SINI ---
     now_gmt7 = datetime.now(timezone(timedelta(hours=7)))
-    
-    # Menyamakan fungsi penentu waktu dengan format request OTP yang sukses
     ts_for_sign = ts_gmt7_without_colon(now_gmt7)
-    ts_header = java_like_timestamp(now_gmt7) 
+    
+    # Menjaga logika asli author (-5 menit) tetapi pastikan formatnya seragam
+    ts_header = ts_gmt7_without_colon(now_gmt7 - timedelta(minutes=5))
     
     signature = ax_api_signature(api_key, ts_for_sign, final_contact, code, contact_type)
 
@@ -171,8 +167,8 @@ def submit_otp(
         "Accept-Encoding": "gzip, deflate, br",
         "Authorization": f"Basic {BASIC_AUTH}",
         "Ax-Api-Signature": signature,
-        "Ax-Device-Id": _fp_pair()[0],
-        "Ax-Fingerprint": _fp_pair()[1],
+        "Ax-Device-Id": AX_DEVICE_ID,
+        "Ax-Fingerprint": AX_FP,
         "Ax-Request-At": ts_header,
         "Ax-Request-Device": "samsung",
         "Ax-Request-Device-Model": "SM-N935F",
@@ -201,17 +197,17 @@ def get_new_token(api_key: str, refresh_token: str, subscriber_id: str) -> str:
     url = BASE_CIAM_URL + "/realms/xl-ciam/protocol/openid-connect/token"
 
     now = datetime.now(timezone(timedelta(hours=7)))
-    ax_request_at = java_like_timestamp(now)
+    ax_request_at = now.strftime("%Y-%m-%dT%H:%M:%S.%f")[:-3] + "+0700"
     ax_request_id = str(uuid.uuid4())
 
     headers = {
         "Host": BASE_CIAM_URL.replace("https://", ""),
         "ax-request-at": ax_request_at,
-        "ax-device-id": _fp_pair()[0],
+        "ax-device-id": AX_DEVICE_ID,
         "ax-request-id": ax_request_id,
         "ax-request-device": "samsung",
         "ax-request-device-model": "SM-N935F",
-        "ax-fingerprint": _fp_pair()[1],
+        "ax-fingerprint": AX_FP,
         "authorization": f"Basic {BASIC_AUTH}",
         "user-agent": UA,
         "ax-substype": "PREPAID",
@@ -270,17 +266,17 @@ def get_auth_code(tokens: dict, pin: str, msisdn: str):
     host_header = parsed.netloc or BASE_CIAM_URL.replace("https://", "")
 
     now = datetime.now(timezone(timedelta(hours=7)))
-    ax_request_at = java_like_timestamp(now)
+    ax_request_at = now.strftime("%Y-%m-%dT%H:%M:%S.%f")[:-3] + "+0700"
     ax_request_id = str(uuid.uuid4())
 
     headers = {
         "Host": host_header,
         "Ax-Request-At": ax_request_at,
-        "Ax-Device-Id": _fp_pair()[0],
+        "Ax-Device-Id": AX_DEVICE_ID,
         "Ax-Request-Id": ax_request_id,
         "Ax-Request-Device": "samsung",
         "Ax-Request-Device-Model": "SM-N935F",
-        "Ax-Fingerprint": _fp_pair()[1],
+        "Ax-Fingerprint": AX_FP,
         "Authorization": f"Bearer {tokens['access_token']}",
         "User-Agent": UA,
         "Ax-Substype": "PREPAID",
