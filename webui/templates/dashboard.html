@@ -83,7 +83,7 @@
   </a>
 </div>
 
-<!-- ====== BELI PAKET (List dari sections) ====== -->
+<!-- ====== BELI PAKET (Ganti manual tanpa loop, agar tidak error) ====== -->
 <div class="mb-4">
   <div class="flex items-center gap-2 mb-3">
     <i class="fa-solid fa-cart-shopping text-slate-400"></i>
@@ -91,47 +91,42 @@
   </div>
   
   <div class="grid grid-cols-2 gap-3">
-    {% for section in sections %}
-      {% if section.group == 'Beli Paket' %}
-        {% for item in section.items %}
-          <a href="{{ item.href }}" class="group flex items-center gap-3 p-3 rounded-xl bg-slate-800/40 border border-slate-700/40 hover:bg-slate-700/50 hover:border-indigo-500/40 transition">
-            <div class="text-lg text-slate-400 group-hover:text-indigo-300 transition">
-              <!-- Mapping icon FontAwesome berdasarkan label -->
-              {% if 'Hot' in item.label and 'Hot-2' not in item.label %}
-                <i class="fa-solid fa-fire"></i>
-              {% elif 'Hot-2' in item.label %}
-                <i class="fa-solid fa-fire"></i><i class="fa-solid fa-fire ml-1"></i>
-              {% elif 'By Option' in item.label %}
-                <i class="fa-solid fa-list-ul"></i>
-              {% elif 'By Family' in item.label %}
-                <i class="fa-solid fa-users"></i>
-              {% elif 'Loop Family' in item.label %}
-                <i class="fa-solid fa-arrows-rotate"></i>
-              {% elif 'Bookmark' in item.label %}
-                <i class="fa-solid fa-bookmark"></i>
-              {% else %}
-                <i class="fa-solid fa-gift"></i>
-              {% endif %}
-            </div>
-            <div class="text-sm font-medium text-slate-200 group-hover:text-white transition">
-              {{ item.label|replace('<svg', '')|replace('</svg>', '')|safe }}
-            </div>
-          </a>
-        {% endfor %}
-      {% endif %}
-    {% endfor %}
+    <a href="/hot" class="group flex items-center gap-3 p-3 rounded-xl bg-slate-800/40 border border-slate-700/40 hover:bg-slate-700/50 hover:border-indigo-500/40 transition">
+      <div class="text-lg text-slate-400 group-hover:text-indigo-300"><i class="fa-solid fa-fire"></i></div>
+      <div class="text-sm font-medium text-slate-200 group-hover:text-white">Hot Deals</div>
+    </a>
+    <a href="/hot2" class="group flex items-center gap-3 p-3 rounded-xl bg-slate-800/40 border border-slate-700/40 hover:bg-slate-700/50 hover:border-indigo-500/40 transition">
+      <div class="text-lg text-slate-400 group-hover:text-indigo-300"><i class="fa-solid fa-fire"></i><i class="fa-solid fa-fire ml-1"></i></div>
+      <div class="text-sm font-medium text-slate-200 group-hover:text-white">Hot-2</div>
+    </a>
+    <a href="/packages/by-option" class="group flex items-center gap-3 p-3 rounded-xl bg-slate-800/40 border border-slate-700/40 hover:bg-slate-700/50 hover:border-indigo-500/40 transition">
+      <div class="text-lg text-slate-400 group-hover:text-indigo-300"><i class="fa-solid fa-list-ul"></i></div>
+      <div class="text-sm font-medium text-slate-200 group-hover:text-white">By Option</div>
+    </a>
+    <a href="/packages/by-family" class="group flex items-center gap-3 p-3 rounded-xl bg-slate-800/40 border border-slate-700/40 hover:bg-slate-700/50 hover:border-indigo-500/40 transition">
+      <div class="text-lg text-slate-400 group-hover:text-indigo-300"><i class="fa-solid fa-users"></i></div>
+      <div class="text-sm font-medium text-slate-200 group-hover:text-white">By Family</div>
+    </a>
+    <a href="/purchase/family-loop" class="group flex items-center gap-3 p-3 rounded-xl bg-slate-800/40 border border-slate-700/40 hover:bg-slate-700/50 hover:border-indigo-500/40 transition">
+      <div class="text-lg text-slate-400 group-hover:text-indigo-300"><i class="fa-solid fa-arrows-rotate"></i></div>
+      <div class="text-sm font-medium text-slate-200 group-hover:text-white">Loop Family</div>
+    </a>
+    <a href="/bookmark" class="group flex items-center gap-3 p-3 rounded-xl bg-slate-800/40 border border-slate-700/40 hover:bg-slate-700/50 hover:border-indigo-500/40 transition">
+      <div class="text-lg text-slate-400 group-hover:text-indigo-300"><i class="fa-solid fa-bookmark"></i></div>
+      <div class="text-sm font-medium text-slate-200 group-hover:text-white">Bookmark</div>
+    </a>
   </div>
 </div>
 
-<!-- ====== KOMUNITAS & LAINNYA (Opsional, sesuai foto) ====== -->
+<!-- ====== KOMUNITAS & LAINNYA ====== -->
 <div class="grid grid-cols-2 gap-3">
   <a href="/family-plan" class="group flex items-center gap-3 p-3 rounded-xl bg-slate-800/40 border border-slate-700/40 hover:bg-slate-700/50 hover:border-indigo-500/40 transition">
     <div class="text-lg text-slate-400 group-hover:text-indigo-300"><i class="fa-solid fa-people-group"></i></div>
     <div class="text-sm font-medium text-slate-200 group-hover:text-white">Akrab</div>
   </a>
-  <a href="/packages/my" class="group flex items-center gap-3 p-3 rounded-xl bg-slate-800/40 border border-slate-700/40 hover:bg-slate-700/50 hover:border-indigo-500/40 transition">
-    <div class="text-lg text-slate-400 group-hover:text-indigo-300"><i class="fa-solid fa-clock"></i></div>
-    <div class="text-sm font-medium text-slate-200 group-hover:text-white">Masa Aktif</div>
+  <a href="/circle" class="group flex items-center gap-3 p-3 rounded-xl bg-slate-800/40 border border-slate-700/40 hover:bg-slate-700/50 hover:border-indigo-500/40 transition">
+    <div class="text-lg text-slate-400 group-hover:text-indigo-300"><i class="fa-solid fa-circle-notch"></i></div>
+    <div class="text-sm font-medium text-slate-200 group-hover:text-white">Circle</div>
   </a>
 </div>
 
