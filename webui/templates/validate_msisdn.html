@@ -1,18 +1,82 @@
 {% extends "base.html" %}
 {% block title %}Validate MSISDN · me-cli{% endblock %}
 {% block content %}
+
 <div class="max-w-md mx-auto">
-  <div class="card">
-    <h1 class="text-xl font-bold mb-3">✅ Validate MSISDN</h1>
-    <form action="/validate-msisdn" method="post" class="space-y-3">
-      <div><label class="label">MSISDN (628xxx)</label><input class="form-input" name="msisdn" pattern="628\d{7,11}" value="{{ msisdn or '' }}" required></div>
-      <button class="btn btn-primary w-full" type="submit">Cek</button>
+
+  <!-- ====== HEADER ====== -->
+  <div class="mb-6 text-center">
+    <div class="text-4xl mb-2">✅</div>
+    <h1 class="text-2xl font-bold text-white">Validasi MSISDN</h1>
+    <p class="text-sm text-slate-400 mt-1">Cek status dan validitas nomor XL kamu.</p>
+  </div>
+
+  <!-- ====== KARTU FORM ====== -->
+  <div class="bg-slate-800/50 border border-slate-700/50 rounded-xl p-6 shadow-lg">
+    
+    <div class="bg-indigo-500/10 border border-indigo-500/30 rounded-lg p-3 mb-4 text-sm text-indigo-200">
+      <div class="flex items-start gap-2">
+        <span class="text-lg">ℹ️</span>
+        <div>
+          <p class="font-medium">Validasi MSISDN digunakan untuk mengecek status nomor.</p>
+          <p class="text-xs text-indigo-200/70 mt-1">Hasil akan menunjukkan apakah nomor aktif, terdaftar, atau memiliki masalah.</p>
+        </div>
+      </div>
+    </div>
+
+    <form action="/validate-msisdn" method="post" class="space-y-4">
+      
+      <div>
+        <label class="block text-xs text-slate-400 mb-1">MSISDN <span class="text-red-400">*</span></label>
+        <input class="w-full bg-slate-800 border border-slate-700 rounded-lg px-3 py-2.5 text-sm focus:border-indigo-500 focus:outline-none transition" 
+               name="msisdn" pattern="628\d{7,11}" value="{{ msisdn or '' }}" placeholder="6281234567890" required autofocus>
+        <p class="text-xs text-slate-500 mt-1">Contoh: <span class="font-mono text-indigo-300">6281234567890</span></p>
+      </div>
+
+      <button class="w-full px-4 py-2.5 bg-indigo-600 hover:bg-indigo-500 text-white font-medium rounded-xl transition shadow-lg shadow-indigo-900/30 flex items-center justify-center gap-2" type="submit">
+        <span>🔍</span> Validasi
+      </button>
     </form>
   </div>
+
+  <!-- ====== HASIL RESPONSE (jika ada) ====== -->
   {% if res %}
-  <div class="card mt-3">
-    <pre class="text-xs overflow-x-auto bg-slate-950 p-2 rounded">{{ res | tojson(indent=2) }}</pre>
+  <div class="mt-6 bg-slate-800/50 border border-slate-700/50 rounded-xl p-5">
+    <div class="flex items-center justify-between mb-2">
+      <span class="text-xs text-slate-400 uppercase tracking-wider">Hasil Validasi</span>
+      <button onclick="copyJSON()" class="text-xs text-indigo-400 hover:text-indigo-300 transition flex items-center gap-1">
+        <span>📋</span> Salin
+      </button>
+    </div>
+    <div class="bg-slate-900/70 border border-slate-700/50 rounded-lg p-3 overflow-x-auto max-h-[300px] overflow-y-auto custom-scrollbar">
+      <pre class="text-xs font-mono text-slate-300 whitespace-pre-wrap break-words">{{ res | tojson(indent=2) }}</pre>
+    </div>
   </div>
   {% endif %}
+
+  <!-- ====== TOMBOL KEMBALI ====== -->
+  <div class="mt-6 text-center">
+    <a href="/" class="text-sm text-slate-400 hover:text-white transition">← Kembali ke Beranda</a>
+  </div>
+
 </div>
+
+<script>
+  function copyJSON() {
+    const jsonText = document.querySelector('pre')?.textContent || '';
+    navigator.clipboard.writeText(jsonText).then(() => {
+      alert('JSON berhasil disalin!');
+    }).catch(() => {
+      alert('Gagal menyalin JSON.');
+    });
+  }
+</script>
+
+<style>
+  .custom-scrollbar::-webkit-scrollbar { width: 4px; }
+  .custom-scrollbar::-webkit-scrollbar-track { background: #1e293b; border-radius: 4px; }
+  .custom-scrollbar::-webkit-scrollbar-thumb { background: #475569; border-radius: 4px; }
+  .custom-scrollbar::-webkit-scrollbar-thumb:hover { background: #64748b; }
+</style>
+
 {% endblock %}
