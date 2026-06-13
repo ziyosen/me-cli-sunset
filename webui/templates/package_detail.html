@@ -1,6 +1,7 @@
 {% extends "base.html" %}
 {% block title %}{{ pkg.package_option.name }} · me-cli{% endblock %}
 {% block content %}
+
 {% set opt = pkg.package_option %}
 {% set fam = pkg.package_family %}
 {% set var = pkg.package_detail_variant %}
@@ -8,97 +9,154 @@
 {% set family_code = fam.package_family_code %}
 {% set variant_code = pkg.get('package_variant', {}).get('package_variant_code', '') %}
 
-<div class="card mb-4 min-w-0 w-full">
-  <div class="flex items-start justify-between gap-3 min-w-0">
-    <div class="min-w-0 flex-1">
-      <div class="text-xs text-slate-400">{{ fam.name }}{% if var %} · {{ var.name }}{% endif %}</div>
-      <h1 class="text-xl font-bold">{{ opt.name }}</h1>
-      <div class="text-2xl font-bold text-indigo-300 mt-2">{{ opt.price | rp }}</div>
-      <div class="text-sm text-slate-400 mt-1">Masa aktif: {{ opt.validity }}</div>
-      {% if opt.point %}<div class="text-sm text-slate-400">Point: {{ opt.point }}</div>{% endif %}
+<!-- ====== HEADER ====== -->
+<div class="mb-6">
+  <a href="javascript:history.back()" class="inline-flex items-center gap-1 text-sm text-slate-400 hover:text-white transition px-3 py-1.5 bg-slate-800/50 rounded-lg border border-slate-700/50">
+    <span>←</span> Kembali
+  </a>
+</div>
+
+<!-- ====== INFO PAKET ====== -->
+<div class="bg-slate-800/50 border border-slate-700/50 rounded-xl p-6 mb-6 relative overflow-hidden">
+  <!-- Background glow -->
+  <div class="absolute -top-20 -right-20 w-64 h-64 bg-indigo-500/10 rounded-full blur-3xl pointer-events-none"></div>
+  
+  <div class="relative z-10">
+    <div class="flex flex-col sm:flex-row sm:items-start justify-between gap-4">
+      <div class="min-w-0 flex-1">
+        <div class="text-xs text-slate-400 flex items-center gap-2 flex-wrap">
+          <span>📁</span> {{ fam.name }}
+          {% if var %}· {{ var.name }}{% endif %}
+        </div>
+        <h1 class="text-2xl sm:text-3xl font-bold text-white mt-1">{{ opt.name }}</h1>
+        <div class="text-2xl font-bold text-indigo-300 mt-3">{{ opt.price | rp }}</div>
+        <div class="flex flex-wrap gap-3 mt-2 text-sm text-slate-400">
+          <span class="flex items-center gap-1">⏱️ {{ opt.validity }}</span>
+          {% if opt.point %}<span class="flex items-center gap-1">⭐ {{ opt.point }} pts</span>{% endif %}
+        </div>
+      </div>
+      
+      <!-- Bookmark Button -->
+      <form action="/bookmark/add" method="post" class="shrink-0">
+        <input type="hidden" name="family_code" value="{{ family_code }}">
+        <input type="hidden" name="family_name" value="{{ fam.name }}">
+        <input type="hidden" name="is_enterprise" value="{{ fam.get('is_enterprise', False) }}">
+        <input type="hidden" name="variant_name" value="{{ var.name if var else '' }}">
+        <input type="hidden" name="option_name" value="{{ opt.name }}">
+        <input type="hidden" name="order" value="{{ opt.get('order', 0) }}">
+        <input type="hidden" name="package_option_code" value="{{ option_code }}">
+        <button type="submit" class="px-4 py-2.5 bg-slate-700 hover:bg-slate-600 text-white rounded-lg text-sm font-medium transition flex items-center gap-2" title="Bookmark">
+          <span class="text-lg">🔖</span> Bookmark
+        </button>
+      </form>
     </div>
-    <form action="/bookmark/add" method="post" class="shrink-0">
-      <input type="hidden" name="family_code" value="{{ family_code }}">
-      <input type="hidden" name="family_name" value="{{ fam.name }}">
-      <input type="hidden" name="is_enterprise" value="{{ fam.get('is_enterprise', False) }}">
-      <input type="hidden" name="variant_name" value="{{ var.name if var else '' }}">
-      <input type="hidden" name="option_name" value="{{ opt.name }}">
-      <input type="hidden" name="order" value="{{ opt.get('order', 0) }}">
-      <input type="hidden" name="package_option_code" value="{{ option_code }}">
-      <button type="submit" class="btn btn-secondary" title="Bookmark">🔖</button>
-    </form>
-  </div>
-  <div class="grid grid-cols-1 sm:grid-cols-2 gap-3 mt-4 text-xs min-w-0 w-full">
-    <div class="code-field min-w-0">
-      <div class="text-slate-400 mb-1">Family code</div>
-      <div class="code-wrap break-all text-slate-200">{{ family_code }}</div>
+
+    <!-- Codes -->
+    <div class="grid grid-cols-1 sm:grid-cols-2 gap-3 mt-5 pt-4 border-t border-slate-700/50">
+      <div>
+        <div class="text-xs text-slate-400 mb-1">Family Code</div>
+        <div class="bg-slate-900/70 border border-slate-700/50 rounded-lg px-3 py-2 text-xs font-mono text-indigo-300 break-all">
+          {{ family_code }}
+        </div>
+      </div>
+      <div>
+        <div class="text-xs text-slate-400 mb-1">Option Code</div>
+        <div class="bg-slate-900/70 border border-slate-700/50 rounded-lg px-3 py-2 text-xs font-mono text-indigo-300 break-all">
+          {{ option_code }}
+        </div>
+      </div>
+      <div class="sm:col-span-2 grid grid-cols-1 sm:grid-cols-2 gap-3">
+        <div>
+          <div class="text-xs text-slate-400">Payment for:</div>
+          <div class="text-sm text-slate-300">{{ fam.payment_for }}</div>
+        </div>
+        <div>
+          <div class="text-xs text-slate-400">Plan type:</div>
+          <div class="text-sm text-slate-300">{{ fam.plan_type }}</div>
+        </div>
+      </div>
     </div>
-    <div class="code-field min-w-0 w-full sm:col-span-2">
-      <div class="text-slate-400 mb-1">Option code</div>
-      <div class="code-wrap break-all text-slate-200">{{ option_code }}</div>
-    </div>
-    <div class="code-field"><span class="text-slate-400">Payment for:</span> {{ fam.payment_for }}</div>
-    <div class="code-field"><span class="text-slate-400">Plan type:</span> {{ fam.plan_type }}</div>
   </div>
 </div>
 
+<!-- ====== BENEFIT ====== -->
 {% if opt.benefits %}
-<div class="card mb-4">
-  <h2 class="font-bold mb-2">Benefit</h2>
-  <ul class="space-y-2 text-sm">
+<div class="bg-slate-800/50 border border-slate-700/50 rounded-xl p-5 mb-6">
+  <div class="flex items-center gap-2 mb-3">
+    <span class="text-lg">🎯</span>
+    <h2 class="font-semibold text-white">Benefit</h2>
+  </div>
+  <div class="grid grid-cols-1 sm:grid-cols-2 gap-3">
     {% for b in opt.benefits %}
-    <li class="border-b border-slate-800 pb-2 last:border-0">
-      <div class="font-medium">{{ b.name }}</div>
-      <div class="text-xs text-slate-400">
-        {% if b.data_type == 'DATA' and b.total %}{{ b.total | bytes }}
-        {% elif b.data_type == 'VOICE' and b.total %}{{ (b.total / 60) | round(0) | int }} menit
-        {% elif b.data_type == 'TEXT' and b.total %}{{ b.total }} SMS
-        {% elif b.total %}{{ b.total }} ({{ b.data_type }})
+    <div class="bg-slate-800/60 border border-slate-700/30 rounded-lg p-3">
+      <div class="font-medium text-white">{{ b.name }}</div>
+      <div class="text-xs text-slate-400 mt-1 flex items-center gap-2 flex-wrap">
+        <span class="text-indigo-300">
+          {% if b.data_type == 'DATA' and b.total %}{{ b.total | bytes }}
+          {% elif b.data_type == 'VOICE' and b.total %}{{ (b.total / 60) | round(0) | int }} menit
+          {% elif b.data_type == 'TEXT' and b.total %}{{ b.total }} SMS
+          {% elif b.total %}{{ b.total }} ({{ b.data_type }})
+          {% else %}—{% endif %}
+        </span>
+        {% if b.is_unlimited %}
+        <span class="text-[10px] px-1.5 py-0.5 bg-emerald-500/20 text-emerald-300 border border-emerald-500/30 rounded-full">∞ Unlimited</span>
         {% endif %}
-        {% if b.is_unlimited %} · ♾️ Unlimited{% endif %}
       </div>
-    </li>
+    </div>
     {% endfor %}
-  </ul>
+  </div>
 </div>
 {% endif %}
 
+<!-- ====== SYARAT & KETENTUAN ====== -->
 {% if opt.tnc %}
-<details class="card mb-4">
-  <summary class="font-bold cursor-pointer">Syarat & Ketentuan</summary>
-  <div class="mt-2 text-sm text-slate-300 prose prose-sm prose-invert max-w-none">{{ opt.tnc | safe }}</div>
+<details class="bg-slate-800/50 border border-slate-700/50 rounded-xl p-4 mb-6">
+  <summary class="cursor-pointer text-sm font-medium text-slate-300 hover:text-white flex items-center gap-2">
+    <span>📄</span> Syarat & Ketentuan
+  </summary>
+  <div class="mt-3 pt-3 border-t border-slate-700/50 text-sm text-slate-300 prose prose-sm prose-invert max-w-none">
+    {{ opt.tnc | safe }}
+  </div>
 </details>
 {% endif %}
 
-<div class="card">
-  <h2 class="font-bold mb-3">Beli Paket</h2>
-  <form action="/purchase/{{ option_code }}" method="post" class="space-y-3"
-        data-confirm="Paket <b>{{ opt.name }}</b> seharga <span class='text-emerald-300 font-bold'>{{ opt.price | rp }}</span> bakal dibeli. Pastiin metode pembayaran udah benar — pembelian nggak bisa dibatalkan setelah submit."
+<!-- ====== FORM PEMBELIAN ====== -->
+<div class="bg-slate-800/50 border border-slate-700/50 rounded-xl p-5">
+  <div class="flex items-center gap-2 mb-4">
+    <span class="text-lg">🛒</span>
+    <h2 class="font-semibold text-white">Beli Paket</h2>
+  </div>
+
+  <form action="/purchase/{{ option_code }}" method="post" class="space-y-4"
+        data-confirm="Paket <b>{{ opt.name }}</b> seharga <span class='text-emerald-300 font-bold'>{{ opt.price | rp }}</span> akan dibeli. Pastikan metode pembayaran sudah benar — pembelian tidak bisa dibatalkan setelah submit."
         data-confirm-title="Konfirmasi Pembelian"
         data-confirm-variant="pay"
         data-confirm-ok="Bayar Sekarang">
+    
     <input type="hidden" name="payment_for" value="{{ fam.payment_for }}">
     <input type="hidden" name="price" value="{{ opt.price }}">
     <input type="hidden" name="item_name" value="{{ opt.name }}">
+
+    <!-- Metode Pembayaran -->
     <div>
-      <label class="label">Metode</label>
-      <select class="form-input" name="method" required>
+      <label class="block text-xs text-slate-400 mb-1">Metode Pembayaran <span class="text-red-400">*</span></label>
+      <select name="method" class="w-full bg-slate-800 border border-slate-700 rounded-lg px-3 py-2.5 text-sm focus:border-indigo-500 focus:outline-none transition" required>
         <optgroup label="Standar">
-          <option value="balance">Pulsa (Balance)</option>
-          <option value="qris">QRIS</option>
-          <option value="ewallet_dana">E-Wallet · DANA</option>
-          <option value="ewallet_shopeepay">E-Wallet · ShopeePay</option>
-          <option value="ewallet_gopay">E-Wallet · GoPay</option>
-          <option value="ewallet_ovo">E-Wallet · OVO</option>
+          <option value="balance">💳 Pulsa (Balance)</option>
+          <option value="qris">📱 QRIS</option>
+          <option value="ewallet_dana">DANA</option>
+          <option value="ewallet_shopeepay">ShopeePay</option>
+          <option value="ewallet_gopay">GoPay</option>
+          <option value="ewallet_ovo">OVO</option>
         </optgroup>
-        <optgroup label="Decoy bawaan">
+        <optgroup label="Decoy Bawaan">
           <option value="decoy_balance">Pulsa + Decoy</option>
           <option value="decoy_balance_v2">Pulsa + Decoy V2</option>
           <option value="decoy_qris">QRIS + Decoy (+1K)</option>
           <option value="decoy_qris0">QRIS + Decoy V2 (Rp0)</option>
         </optgroup>
         {% if custom_decoys %}
-        <optgroup label="Decoy custom">
+        <optgroup label="Decoy Custom">
           {% for c in custom_decoys %}
           <option value="decoy_custom_{{ c.name }}">
             {% if c.base_method == 'qris' %}QRIS{% else %}Pulsa{% endif %} + Decoy ({{ c.name }})
@@ -108,44 +166,64 @@
         {% endif %}
       </select>
     </div>
-    <div id="wallet-num" style="display:none">
-      <label class="label">Nomor E-Wallet (08...)</label>
-      <input class="form-input" type="text" name="wallet_number" pattern="08\d{7,12}">
+
+    <!-- Wallet Number (E-Wallet) -->
+    <div id="wallet-num" class="hidden">
+      <label class="block text-xs text-slate-400 mb-1">Nomor E-Wallet (08...)</label>
+      <input class="w-full bg-slate-800 border border-slate-700 rounded-lg px-3 py-2.5 text-sm focus:border-indigo-500 focus:outline-none transition" 
+             type="text" name="wallet_number" pattern="08\d{7,12}" placeholder="081234567890">
     </div>
-    <div id="qris-amount" style="display:none">
-      <label class="label">Override Amount (kosong = price + decoy price; trial-error)</label>
-      <input class="form-input" type="number" name="qris_amount" min="0" placeholder="(opsional)">
-      <p class="text-xs text-slate-500 mt-1">QRIS decoy butuh amount yang server terima (Bizz-err.Amount.Total). Coba angka di sekitar harga paket utama.</p>
+
+    <!-- QRIS Amount Override -->
+    <div id="qris-amount" class="hidden">
+      <label class="block text-xs text-slate-400 mb-1">Override Amount (opsional)</label>
+      <input class="w-full bg-slate-800 border border-slate-700 rounded-lg px-3 py-2.5 text-sm focus:border-indigo-500 focus:outline-none transition" 
+             type="number" name="qris_amount" min="0" placeholder="(opsional)">
+      <p class="text-xs text-slate-500 mt-1">QRIS decoy membutuhkan amount yang diterima server (Bizz-err.Amount.Total). Coba angka di sekitar harga paket utama.</p>
     </div>
-    <button class="btn btn-primary w-full" type="button" data-confirm-trigger>Bayar</button>
+
+    <!-- Submit Button -->
+    <button class="w-full px-4 py-3 bg-indigo-600 hover:bg-indigo-500 text-white font-medium rounded-xl transition shadow-lg shadow-indigo-900/30 flex items-center justify-center gap-2" type="button" data-confirm-trigger>
+      <span class="text-lg">🛒</span> Bayar Sekarang
+    </button>
   </form>
-  <script>
-    (function(){
-      var methodSel = document.querySelector('select[name=method]');
-      var walletInput = document.querySelector('input[name=wallet_number]');
-      var qrisInput = document.querySelector('input[name=qris_amount]');
-      function syncMethodFields() {
-        var v = methodSel.value;
-        var sel = methodSel.options[methodSel.selectedIndex];
-        var label = sel.text || '';
-        var needWallet = v.startsWith('ewallet');
-        document.getElementById('wallet-num').style.display = needWallet ? 'block' : 'none';
-        if (walletInput) {
-          walletInput.disabled = !needWallet;
-          walletInput.required = needWallet;
-          if (!needWallet) walletInput.value = '';
-        }
-        var isQrisDecoy = (v === 'decoy_qris' || v === 'decoy_qris0' ||
-                           (v.startsWith('decoy_custom_') && label.trim().startsWith('QRIS')));
-        document.getElementById('qris-amount').style.display = isQrisDecoy ? 'block' : 'none';
-        if (qrisInput) {
-          qrisInput.disabled = !isQrisDecoy;
-          if (!isQrisDecoy) qrisInput.value = '';
-        }
-      }
-      methodSel.addEventListener('change', syncMethodFields);
-      syncMethodFields();
-    })();
-  </script>
 </div>
+
+<script>
+(function(){
+  var methodSel = document.querySelector('select[name=method]');
+  var walletInput = document.querySelector('input[name=wallet_number]');
+  var qrisInput = document.querySelector('input[name=qris_amount]');
+  var walletNumDiv = document.getElementById('wallet-num');
+  var qrisAmountDiv = document.getElementById('qris-amount');
+
+  function syncMethodFields() {
+    var v = methodSel.value;
+    var sel = methodSel.options[methodSel.selectedIndex];
+    var label = sel.text || '';
+    var needWallet = v.startsWith('ewallet');
+    
+    // E-Wallet
+    walletNumDiv.style.display = needWallet ? 'block' : 'none';
+    if (walletInput) {
+      walletInput.disabled = !needWallet;
+      walletInput.required = needWallet;
+      if (!needWallet) walletInput.value = '';
+    }
+
+    // QRIS Decoy
+    var isQrisDecoy = (v === 'decoy_qris' || v === 'decoy_qris0' ||
+                       (v.startsWith('decoy_custom_') && label.trim().startsWith('QRIS')));
+    qrisAmountDiv.style.display = isQrisDecoy ? 'block' : 'none';
+    if (qrisInput) {
+      qrisInput.disabled = !isQrisDecoy;
+      if (!isQrisDecoy) qrisInput.value = '';
+    }
+  }
+
+  methodSel.addEventListener('change', syncMethodFields);
+  syncMethodFields();
+})();
+</script>
+
 {% endblock %}
