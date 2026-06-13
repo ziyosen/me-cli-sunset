@@ -3,28 +3,32 @@
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>me-cli · Dashboard</title>
-  <!-- Google Font: Inter (Premium) -->
+  <title>{% block title %}me-cli · Dashboard{% endblock %}</title>
+  
+  <!-- Font Inter Premium -->
   <link rel="preconnect" href="https://fonts.googleapis.com" />
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
   <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet" />
-  <!-- Tailwind -->
+  
+  <!-- Tailwind + HTMX + SSE -->
   <script src="https://cdn.tailwindcss.com"></script>
-  <!-- HTMX -->
-  <script src="https://unpkg.com/htmx.org@1.9.12"></script>
+  <script src="https://unpkg.com/htmx.org@1.9.12" integrity="sha384-ujb1lZYygJmzgSwoxRggbCHcjc0rB2XoQrxeTUQyRjrOnlCoYta87iKBWq3EsdM2" crossorigin="anonymous"></script>
   <script src="https://unpkg.com/htmx.org@1.9.12/dist/ext/sse.js"></script>
-
+  
   <style>
-    /* Kustomisasi Tailwind + Scrollbar Keren */
     body { font-family: 'Inter', sans-serif; }
+    
+    /* Scrollbar Keren */
     ::-webkit-scrollbar { width: 6px; height: 6px; }
     ::-webkit-scrollbar-track { background: #1e293b; }
     ::-webkit-scrollbar-thumb { background: #475569; border-radius: 12px; }
     ::-webkit-scrollbar-thumb:hover { background: #64748b; }
 
-    /* Gradient Glow untuk Kartu Profil */
+    /* Glass & Button Dasar */
     .glass-card { background: rgba(255,255,255,0.03); backdrop-filter: blur(8px); border: 1px solid rgba(255,255,255,0.05); }
     .glass-card:hover { background: rgba(255,255,255,0.06); border-color: rgba(255,255,255,0.1); }
+    
+    .btn-primary { @apply bg-indigo-600 hover:bg-indigo-500 text-white px-4 py-2 rounded-lg transition; }
   </style>
 
   <script>
@@ -40,52 +44,55 @@
     }
   </script>
 </head>
+
 <body class="bg-slate-900 text-slate-200 antialiased overflow-x-hidden min-h-screen">
 
-  <!-- ===================== TOPBAR ===================== -->
+  <!-- ====== TOPBAR ====== -->
   <header class="bg-slate-800/70 backdrop-blur border-b border-slate-700 sticky top-0 z-30">
     <div class="flex items-center justify-between px-4 h-16 lg:pl-72">
       <div class="flex items-center gap-4">
-        <!-- Tombol Menu Mobile -->
+        <!-- Tombol Sidebar Mobile -->
         <button id="nav-toggle" class="lg:hidden text-slate-300 hover:text-white">
-          <svg width="24" height="24" fill="none" stroke="currentColor" stroke-width="2"><line x1="3" y1="6" x2="21" y2="6"/><line x1="3" y1="12" x2="21" y2="12"/><line x1="3" y1="18" x2="21" y2="18"/></svg>
+          <svg width="24" height="24" fill="none" stroke="currentColor" stroke-width="2">
+            <line x1="3" y1="6" x2="21" y2="6"/>
+            <line x1="3" y1="12" x2="21" y2="12"/>
+            <line x1="3" y1="18" x2="21" y2="18"/>
+          </svg>
         </button>
         <a href="/" class="text-xl font-bold tracking-tight bg-gradient-to-r from-indigo-400 to-purple-400 bg-clip-text text-transparent">⚡ me‑cli</a>
       </div>
+
       <div class="flex items-center gap-4 text-sm">
         {% if active_user %}
-        <span class="hidden sm:inline-block px-3 py-1 bg-slate-700/50 rounded-full text-xs text-slate-300 border border-slate-600/50 font-mono">
-          📱 {{ active_user.number }}
-        </span>
+          <span class="hidden sm:inline-block px-3 py-1 bg-slate-700/50 rounded-full text-xs text-slate-300 border border-slate-600/50 font-mono">
+            📱 {{ active_user.number }}
+          </span>
         {% endif %}
         {% if webui_user %}
-        <a href="/u/logout" class="text-xs px-3 py-1 rounded-full bg-slate-700 hover:bg-red-500/30 text-slate-400 hover:text-red-200 transition">⏻ Keluar</a>
+          <a href="/u/logout" class="text-xs px-3 py-1 rounded-full bg-slate-700 hover:bg-red-500/30 text-slate-400 hover:text-red-200 transition">⏻ Keluar</a>
         {% else %}
-        <a href="/u/login" class="btn btn-primary text-xs">Login</a>
+          <a href="/u/login" class="btn-primary text-xs">Login</a>
         {% endif %}
       </div>
     </div>
   </header>
 
-  <!-- ===================== SIDEBAR (Deskripsi clean) ===================== -->
+  <!-- ====== SIDEBAR (Desktop) / DRAWER (Mobile) ====== -->
   <aside id="sidebar" class="fixed inset-y-0 left-0 w-64 bg-slate-800/80 border-r border-slate-700 z-40 transform -translate-x-full lg:translate-x-0 transition-transform overflow-y-auto backdrop-blur">
     <div class="p-5 border-b border-slate-700/50">
       <div class="text-lg font-bold bg-gradient-to-r from-indigo-400 to-purple-400 bg-clip-text text-transparent">⚡ me‑cli</div>
       <div class="text-xs text-slate-500">myXL · WebUI v2</div>
     </div>
     <nav class="p-4 space-y-1">
-      <!-- Group: Utama -->
       <div class="text-[10px] uppercase tracking-widest text-slate-500 mt-2 mb-1 px-2">Utama</div>
       <a href="/" class="flex items-center gap-3 px-3 py-2.5 rounded-lg text-sm transition hover:bg-slate-700/60 {% if request.path == '/' %}bg-indigo-600/40 text-indigo-200 border border-indigo-500/40{% else %}text-slate-300{% endif %}">🏠 Beranda</a>
       <a href="/packages/my" class="flex items-center gap-3 px-3 py-2.5 rounded-lg text-sm transition hover:bg-slate-700/60 {% if request.path == '/packages/my' %}bg-indigo-600/40 text-indigo-200 border border-indigo-500/40{% else %}text-slate-300{% endif %}">📦 Paket Saya</a>
       <a href="/hot" class="flex items-center gap-3 px-3 py-2.5 rounded-lg text-sm transition hover:bg-slate-700/60 {% if request.path == '/hot' %}bg-indigo-600/40 text-indigo-200 border border-indigo-500/40{% else %}text-slate-300{% endif %}">🔥 Hot Deals</a>
 
-      <!-- Group: Transaksi & Akun -->
       <div class="text-[10px] uppercase tracking-widest text-slate-500 mt-6 mb-1 px-2">Layanan</div>
       <a href="/transactions" class="flex items-center gap-3 px-3 py-2.5 rounded-lg text-sm transition hover:bg-slate-700/60 {% if request.path == '/transactions' %}bg-indigo-600/40 text-indigo-200 border border-indigo-500/40{% else %}text-slate-300{% endif %}">🧾 Histori</a>
       <a href="/accounts" class="flex items-center gap-3 px-3 py-2.5 rounded-lg text-sm transition hover:bg-slate-700/60 {% if request.path == '/accounts' %}bg-indigo-600/40 text-indigo-200 border border-indigo-500/40{% else %}text-slate-300{% endif %}">👤 Akun & Kartu</a>
 
-      <!-- Group: Lainnya (cuma sedikit) -->
       <div class="text-[10px] uppercase tracking-widest text-slate-500 mt-6 mb-1 px-2">Lainnya</div>
       <a href="/settings" class="flex items-center gap-3 px-3 py-2.5 rounded-lg text-sm transition hover:bg-slate-700/60 text-slate-400 hover:text-white">⚙️ Pengaturan</a>
     </nav>
@@ -95,105 +102,23 @@
     </div>
   </aside>
 
-  <!-- Backdrop untuk Mobile -->
+  <!-- Backdrop (Mobile) -->
   <div id="nav-backdrop" class="lg:hidden fixed inset-0 bg-black/60 z-30 hidden"></div>
 
-  <!-- ===================== MAIN CONTENT ===================== -->
+  <!-- ====== MAIN ====== -->
   <main class="lg:pl-64 pb-24 lg:pb-8">
     <div class="px-4 py-6 max-w-5xl mx-auto w-full">
-
       {% block content %}
-      <!-- ====== DASHBOARD HOME (Halaman depan) ====== -->
-      
-      <!-- 1. Kartu Profil (Sekarang jadi keren) -->
-      <div class="relative overflow-hidden rounded-2xl bg-gradient-to-br from-indigo-600 to-purple-700 p-6 shadow-xl mb-8 border border-white/10">
-        <!-- Efek glowing di belakang -->
-        <div class="absolute -right-12 -top-12 w-48 h-48 bg-white/10 rounded-full blur-3xl"></div>
-        
-        <div class="flex justify-between items-start relative z-10">
-          <div>
-            <div class="text-indigo-200 text-xs font-medium uppercase tracking-wider flex items-center gap-2">
-              <span>📱</span> Nomor Aktif
-            </div>
-            <div class="text-2xl font-bold text-white mt-1 tracking-wide">6287836212546</div>
-            <div class="text-indigo-200 text-xs mt-1">Masa aktif: 28 Juni 2026</div>
-          </div>
-          <span class="bg-white/10 backdrop-blur-sm rounded-full px-3 py-1 text-xs text-white border border-white/20">PREPAID</span>
-        </div>
-
-        <div class="grid grid-cols-2 gap-4 mt-6 relative z-10">
-          <div class="bg-white/10 backdrop-blur-sm rounded-xl p-3 border border-white/10">
-            <div class="text-indigo-200 text-[10px] uppercase tracking-wide">Pulsa</div>
-            <div class="text-xl font-semibold text-white">Rp 3.910</div>
-          </div>
-          <div class="bg-white/10 backdrop-blur-sm rounded-xl p-3 border border-white/10">
-            <div class="text-indigo-200 text-[10px] uppercase tracking-wide">Poin</div>
-            <div class="text-xl font-semibold text-white">587</div>
-          </div>
-        </div>
-        <div class="mt-4 text-right text-[10px] text-indigo-300/70">💳 Kartu utama</div>
+      <!-- Default content jika tidak ada yang di-override -->
+      <div class="text-center py-10 text-slate-400">
+        <h2 class="text-xl font-semibold text-white">Selamat datang di me-cli</h2>
+        <p class="mt-2">Halaman ini masih kosong. Silakan perbarui.</p>
       </div>
-
-      <!-- 2. Aksi Cepat (Hapus kotak2 kecil jelek, ganti jadi grid 2 kolom besar) -->
-      <div class="grid grid-cols-2 lg:grid-cols-4 gap-4 mb-8">
-        <a href="/purchase" class="group bg-slate-800/50 hover:bg-slate-700 border border-slate-700/50 hover:border-indigo-500/50 rounded-xl p-4 transition-all cursor-pointer flex flex-col items-start gap-1">
-          <span class="text-2xl">🛒</span>
-          <span class="font-medium text-white">Beli Paket</span>
-          <span class="text-xs text-slate-400">Internet & Kuota</span>
-        </a>
-        <a href="/packages/my" class="group bg-slate-800/50 hover:bg-slate-700 border border-slate-700/50 hover:border-indigo-500/50 rounded-xl p-4 transition-all cursor-pointer flex flex-col items-start gap-1">
-          <span class="text-2xl">📦</span>
-          <span class="font-medium text-white">Paket Saya</span>
-          <span class="text-xs text-slate-400">Cek kuota aktif</span>
-        </a>
-        <a href="/hot" class="group bg-slate-800/50 hover:bg-slate-700 border border-slate-700/50 hover:border-indigo-500/50 rounded-xl p-4 transition-all cursor-pointer flex flex-col items-start gap-1">
-          <span class="text-2xl">🔥</span>
-          <span class="font-medium text-white">Hot Deals</span>
-          <span class="text-xs text-slate-400">Promo terbaru</span>
-        </a>
-        <a href="/transactions" class="group bg-slate-800/50 hover:bg-slate-700 border border-slate-700/50 hover:border-indigo-500/50 rounded-xl p-4 transition-all cursor-pointer flex flex-col items-start gap-1">
-          <span class="text-2xl">📋</span>
-          <span class="font-medium text-white">Histori</span>
-          <span class="text-xs text-slate-400">Riwayat transaksi</span>
-        </a>
-      </div>
-
-      <!-- 3. Aktivitas Terbaru (Section baru biar ga terlihat kosong) -->
-      <div class="bg-slate-800/40 border border-slate-700/40 rounded-xl p-5">
-        <div class="flex items-center justify-between mb-3">
-          <h3 class="font-medium text-white">📌 Aktivitas Terbaru</h3>
-          <a href="/transactions" class="text-xs text-indigo-400 hover:text-indigo-300">Lihat semua →</a>
-        </div>
-        <div class="space-y-3">
-          <div class="flex items-center justify-between p-3 bg-slate-800/60 rounded-lg border border-slate-700/30">
-            <div class="flex items-center gap-3">
-              <span class="text-lg">📦</span>
-              <div>
-                <div class="text-sm text-slate-200">Paket 10GB</div>
-                <div class="text-xs text-slate-500">15 menit lalu</div>
-              </div>
-            </div>
-            <span class="text-emerald-400 text-sm font-medium">+10 GB</span>
-          </div>
-          <div class="flex items-center justify-between p-3 bg-slate-800/60 rounded-lg border border-slate-700/30">
-            <div class="flex items-center gap-3">
-              <span class="text-lg">💸</span>
-              <div>
-                <div class="text-sm text-slate-200">Isi Pulsa</div>
-                <div class="text-xs text-slate-500">Kemarin, 14:30</div>
-              </div>
-            </div>
-            <span class="text-slate-300 text-sm font-medium">- Rp 25.000</span>
-          </div>
-        </div>
-      </div>
-
-      <!-- END HOME -->
       {% endblock %}
     </div>
   </main>
 
-  <!-- ===================== BOTTOM NAV (Mobile) ===================== -->
+  <!-- ====== BOTTOM NAV (Mobile) ====== -->
   <nav class="lg:hidden fixed bottom-0 inset-x-0 bg-slate-800/90 backdrop-blur border-t border-slate-700 z-30 py-1">
     <div class="flex justify-around">
       <a href="/" class="flex flex-col items-center p-1 gap-0.5 {% if request.path == '/' %}text-indigo-400{% else %}text-slate-400 hover:text-white{% endif %}">
@@ -219,9 +144,9 @@
     </div>
   </nav>
 
-  <!-- ===================== JS: Sidebar Toggle ===================== -->
+  <!-- ====== JS Sederhana ====== -->
   <script>
-    (function(){
+    (function() {
       const sidebar = document.getElementById('sidebar');
       const backdrop = document.getElementById('nav-backdrop');
       const toggleBtn = document.getElementById('nav-toggle');
