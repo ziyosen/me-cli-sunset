@@ -1,168 +1,401 @@
 <!DOCTYPE html>
-<html lang="id">
+<html lang="id" class="{% if user_theme == 'light' %}theme-light{% endif %}">
 <head>
-  <meta charset="UTF-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>{% block title %}me-cli · Dashboard{% endblock %}</title>
-  
-  <!-- Font Inter Premium -->
-  <link rel="preconnect" href="https://fonts.googleapis.com" />
-  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
-  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet" />
-  
-  <!-- Tailwind + HTMX + SSE -->
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>{% block title %}me-cli-sunset{% endblock %}</title>
   <script src="https://cdn.tailwindcss.com"></script>
   <script src="https://unpkg.com/htmx.org@1.9.12" integrity="sha384-ujb1lZYygJmzgSwoxRggbCHcjc0rB2XoQrxeTUQyRjrOnlCoYta87iKBWq3EsdM2" crossorigin="anonymous"></script>
   <script src="https://unpkg.com/htmx.org@1.9.12/dist/ext/sse.js"></script>
-  
-  <style>
-    body { font-family: 'Inter', sans-serif; }
-    
-    /* Scrollbar Keren */
-    ::-webkit-scrollbar { width: 6px; height: 6px; }
-    ::-webkit-scrollbar-track { background: #1e293b; }
-    ::-webkit-scrollbar-thumb { background: #475569; border-radius: 12px; }
-    ::-webkit-scrollbar-thumb:hover { background: #64748b; }
-
-    /* Glass & Button Dasar */
-    .glass-card { background: rgba(255,255,255,0.03); backdrop-filter: blur(8px); border: 1px solid rgba(255,255,255,0.05); }
-    .glass-card:hover { background: rgba(255,255,255,0.06); border-color: rgba(255,255,255,0.1); }
-    
-    .btn-primary { @apply bg-indigo-600 hover:bg-indigo-500 text-white px-4 py-2 rounded-lg transition; }
-  </style>
-
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+  <link rel="stylesheet" href="/static/css/custom.css?v=2">
+  <link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='%234f46e5' stroke-width='2' stroke-linecap='round' stroke-linejoin='round'%3E%3Cstyle%3E@media (prefers-color-scheme: dark) %7B polygon %7B stroke: %23818cf8; %7D %7D%3C/style%3E%3Cpolygon points='13 2 3 14 12 14 11 22 21 10 12 10 13 2'%3E%3C/polygon%3E%3C/svg%3E">
   <script>
-    tailwind.config = {
-      theme: {
-        extend: {
-          fontFamily: { sans: ['Inter', 'sans-serif'] },
-          colors: {
-            brand: { 50: '#eef2ff', 400: '#818cf8', 500: '#6366f1', 600: '#4f46e5', 700: '#4338ca' }
-          }
-        }
-      }
-    }
+    tailwind.config = { theme: { extend: {
+      colors: { brand: { 50:'#eef2ff',400:'#818cf8',500:'#6366f1',600:'#4f46e5',700:'#4338ca'}}
+    } } }
   </script>
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css" crossorigin="anonymous">
 </head>
 
-<body class="bg-slate-900 text-slate-200 antialiased overflow-x-hidden min-h-screen">
+<body class="bg-slate-950 text-slate-100 min-h-screen antialiased overflow-x-hidden">
 
-  <!-- ====== TOPBAR ====== -->
-  <header class="bg-slate-800/70 backdrop-blur border-b border-slate-700 sticky top-0 z-30">
-    <div class="flex items-center justify-between px-4 h-16 lg:pl-72">
-      <div class="flex items-center gap-4">
-        <!-- Tombol Sidebar Mobile -->
-        <button id="nav-toggle" class="lg:hidden text-slate-300 hover:text-white">
-          <svg width="24" height="24" fill="none" stroke="currentColor" stroke-width="2">
-            <line x1="3" y1="6" x2="21" y2="6"/>
-            <line x1="3" y1="12" x2="21" y2="12"/>
-            <line x1="3" y1="18" x2="21" y2="18"/>
-          </svg>
-        </button>
-        <a href="/" class="text-xl font-bold tracking-tight bg-gradient-to-r from-indigo-400 to-purple-400 bg-clip-text text-transparent">⚡ me‑cli</a>
-      </div>
-
-      <div class="flex items-center gap-4 text-sm">
-        {% if active_user %}
-          <span class="hidden sm:inline-block px-3 py-1 bg-slate-700/50 rounded-full text-xs text-slate-300 border border-slate-600/50 font-mono">
-            📱 {{ active_user.number }}
-          </span>
-        {% endif %}
-        {% if webui_user %}
-          <a href="/u/logout" class="text-xs px-3 py-1 rounded-full bg-slate-700 hover:bg-red-500/30 text-slate-400 hover:text-red-200 transition">⏻ Keluar</a>
-        {% else %}
-          <a href="/u/login" class="btn-primary text-xs">Login</a>
-        {% endif %}
+<!-- GLOBAL LOADER -->
+<div id="page-loader" class="page-loader fixed inset-0 z-50 flex items-center justify-center pointer-events-none" style="opacity:0; transition: opacity 150ms ease;">
+  <div class="page-loader__backdrop absolute inset-0 bg-slate-950/88 backdrop-blur-md"></div>
+  <div class="page-loader__panel relative flex flex-col items-center gap-5 px-8 py-7 text-center max-w-sm mx-4">
+    <div class="page-loader__spinner relative w-20 h-20">
+      <div class="page-loader__ring page-loader__ring--outer absolute inset-0 rounded-full"></div>
+      <div class="page-loader__ring page-loader__ring--spin absolute inset-1 rounded-full"></div>
+      <div class="page-loader__ring page-loader__ring--pulse absolute inset-3 rounded-full"></div>
+      <div class="page-loader__icon absolute inset-0 flex items-center justify-center text-2xl text-indigo-400" id="page-loader-icon">
+        <i class="fa-solid fa-spinner fa-spin"></i>
       </div>
     </div>
-  </header>
-
-  <!-- ====== SIDEBAR (Desktop) / DRAWER (Mobile) ====== -->
-  <aside id="sidebar" class="fixed inset-y-0 left-0 w-64 bg-slate-800/80 border-r border-slate-700 z-40 transform -translate-x-full lg:translate-x-0 transition-transform overflow-y-auto backdrop-blur">
-    <div class="p-5 border-b border-slate-700/50">
-      <div class="text-lg font-bold bg-gradient-to-r from-indigo-400 to-purple-400 bg-clip-text text-transparent">⚡ me‑cli</div>
-      <div class="text-xs text-slate-500">myXL · WebUI v2</div>
-    </div>
-    <nav class="p-4 space-y-1">
-      <div class="text-[10px] uppercase tracking-widest text-slate-500 mt-2 mb-1 px-2">Utama</div>
-      <a href="/" class="flex items-center gap-3 px-3 py-2.5 rounded-lg text-sm transition hover:bg-slate-700/60 {% if request.path == '/' %}bg-indigo-600/40 text-indigo-200 border border-indigo-500/40{% else %}text-slate-300{% endif %}">🏠 Beranda</a>
-      <a href="/packages/my" class="flex items-center gap-3 px-3 py-2.5 rounded-lg text-sm transition hover:bg-slate-700/60 {% if request.path == '/packages/my' %}bg-indigo-600/40 text-indigo-200 border border-indigo-500/40{% else %}text-slate-300{% endif %}">📦 Paket Saya</a>
-      <a href="/hot" class="flex items-center gap-3 px-3 py-2.5 rounded-lg text-sm transition hover:bg-slate-700/60 {% if request.path == '/hot' %}bg-indigo-600/40 text-indigo-200 border border-indigo-500/40{% else %}text-slate-300{% endif %}">🔥 Hot Deals</a>
-
-      <div class="text-[10px] uppercase tracking-widest text-slate-500 mt-6 mb-1 px-2">Layanan</div>
-      <a href="/transactions" class="flex items-center gap-3 px-3 py-2.5 rounded-lg text-sm transition hover:bg-slate-700/60 {% if request.path == '/transactions' %}bg-indigo-600/40 text-indigo-200 border border-indigo-500/40{% else %}text-slate-300{% endif %}">🧾 Histori</a>
-      <a href="/accounts" class="flex items-center gap-3 px-3 py-2.5 rounded-lg text-sm transition hover:bg-slate-700/60 {% if request.path == '/accounts' %}bg-indigo-600/40 text-indigo-200 border border-indigo-500/40{% else %}text-slate-300{% endif %}">👤 Akun & Kartu</a>
-
-      <div class="text-[10px] uppercase tracking-widest text-slate-500 mt-6 mb-1 px-2">Lainnya</div>
-      <a href="/settings" class="flex items-center gap-3 px-3 py-2.5 rounded-lg text-sm transition hover:bg-slate-700/60 text-slate-400 hover:text-white">⚙️ Pengaturan</a>
-    </nav>
-    <div class="p-4 text-xs text-slate-600 border-t border-slate-700/50 mt-4">
-      <div>v1.0 · port 8089</div>
-      <div class="mt-1"><a href="https://github.com/purplemashu/me-cli-sunset" class="hover:text-slate-400" target="_blank">repo ↗</a></div>
-    </div>
-  </aside>
-
-  <!-- Backdrop (Mobile) -->
-  <div id="nav-backdrop" class="lg:hidden fixed inset-0 bg-black/60 z-30 hidden"></div>
-
-  <!-- ====== MAIN ====== -->
-  <main class="lg:pl-64 pb-24 lg:pb-8">
-    <div class="px-4 py-6 max-w-5xl mx-auto w-full">
-      {% block content %}
-      <!-- Default content jika tidak ada yang di-override -->
-      <div class="text-center py-10 text-slate-400">
-        <h2 class="text-xl font-semibold text-white">Selamat datang di me-cli</h2>
-        <p class="mt-2">Halaman ini masih kosong. Silakan perbarui.</p>
+    <div class="w-full space-y-2">
+      <div id="page-loader-msg" class="text-sm font-medium text-slate-200">Memuat…</div>
+      <div id="page-loader-sub" class="text-xs text-slate-500">Tunggu sebentar ya cuy</div>
+      <div id="page-loader-bar" class="page-loader__bar hidden" aria-hidden="true">
+        <div class="page-loader__bar-fill"></div>
       </div>
-      {% endblock %}
+      <div id="page-loader-dots" class="page-loader__dots hidden" aria-hidden="true">
+        <span></span><span></span><span></span>
+      </div>
     </div>
-  </main>
+  </div>
+</div>
 
-  <!-- ====== BOTTOM NAV (Mobile) ====== -->
-  <nav class="lg:hidden fixed bottom-0 inset-x-0 bg-slate-800/90 backdrop-blur border-t border-slate-700 z-30 py-1">
-    <div class="flex justify-around">
-      <a href="/" class="flex flex-col items-center p-1 gap-0.5 {% if request.path == '/' %}text-indigo-400{% else %}text-slate-400 hover:text-white{% endif %}">
-        <span class="text-xl">🏠</span>
-        <span class="text-[9px] font-medium">Home</span>
-      </a>
-      <a href="/packages/my" class="flex flex-col items-center p-1 gap-0.5 {% if request.path == '/packages/my' %}text-indigo-400{% else %}text-slate-400 hover:text-white{% endif %}">
-        <span class="text-xl">📦</span>
-        <span class="text-[9px] font-medium">Paket</span>
-      </a>
-      <a href="/hot" class="flex flex-col items-center p-1 gap-0.5 {% if request.path == '/hot' %}text-indigo-400{% else %}text-slate-400 hover:text-white{% endif %}">
-        <span class="text-xl">🔥</span>
-        <span class="text-[9px] font-medium">Hot</span>
-      </a>
-      <a href="/transactions" class="flex flex-col items-center p-1 gap-0.5 {% if request.path == '/transactions' %}text-indigo-400{% else %}text-slate-400 hover:text-white{% endif %}">
-        <span class="text-xl">📋</span>
-        <span class="text-[9px] font-medium">Histori</span>
-      </a>
-      <a href="/accounts" class="flex flex-col items-center p-1 gap-0.5 {% if request.path == '/accounts' %}text-indigo-400{% else %}text-slate-400 hover:text-white{% endif %}">
-        <span class="text-xl">👤</span>
-        <span class="text-[9px] font-medium">Akun</span>
-      </a>
+<!-- CONFIRM MODAL -->
+<div id="confirm-modal" class="confirm-modal fixed inset-0 z-[60] flex items-center justify-center pointer-events-none" style="opacity:0; transition: opacity 150ms ease;">
+  <div id="confirm-backdrop" class="absolute inset-0 bg-slate-950/70 backdrop-blur-sm"></div>
+  <div id="confirm-panel" class="confirm-modal__panel relative bg-slate-900 border border-slate-700 rounded-2xl shadow-2xl w-[calc(100%-2rem)] max-w-md transition-transform duration-150 ease-out">
+    <div class="p-5 sm:p-6">
+      <div class="flex items-start gap-3">
+        <div id="confirm-icon" class="w-11 h-11 rounded-full flex items-center justify-center shrink-0 bg-amber-500/15 text-amber-300 border border-amber-500/30">
+          <i class="fa-solid fa-triangle-exclamation"></i>
+        </div>
+        <div class="min-w-0 flex-1">
+          <h3 id="confirm-title" class="font-bold text-base sm:text-lg text-slate-100 leading-snug">Konfirmasi</h3>
+          <div id="confirm-message" class="text-sm text-slate-300 mt-1 leading-relaxed">Yakin mau lanjut?</div>
+        </div>
+      </div>
+      <div id="confirm-detail-wrap" class="mt-4 hidden">
+        <div id="confirm-detail" class="text-xs text-slate-400 bg-slate-950/60 border border-slate-800 rounded-lg p-3 font-mono break-all"></div>
+      </div>
+      <div class="flex gap-2 mt-5 justify-end">
+        <button type="button" id="confirm-cancel" class="btn btn-secondary text-sm px-4">Batal</button>
+        <button type="button" id="confirm-ok" class="btn btn-primary text-sm px-4">Lanjut</button>
+      </div>
     </div>
+  </div>
+</div>
+
+<!-- Sidebar definitions -->
+{% set sections = [
+  {'label':'Beranda','icon':'<svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="inline-block mr-1"><path d="M3 9l9-7 9 7v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"></path><polyline points="9 22 9 12 15 12 15 22"></polyline></svg>','href':'/'},
+  {'label':'Paket Saya','icon':'<svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="inline-block mr-1"><line x1="16.5" y1="9.4" x2="7.5" y2="4.21"></line><path d="M21 16V8a2 2 0 0 0-1-1.73l-7-4a2 2 0 0 0-2 0l-7 4A2 2 0 0 0 3 8v8a2 2 0 0 0 1 1.73l7 4a2 2 0 0 0 2 0l7-4A2 2 0 0 0 21 16z"></path><polyline points="3.27 6.96 12 12.01 20.73 6.96"></polyline><line x1="12" y1="22.08" x2="12" y2="12"></line></svg>','href':'/packages/my'},
+  {'group':'Beli Paket','items':[
+    {'label':'<svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="inline-block mr-1"><path d="M8.5 14.5A2.5 2.5 0 0 0 11 12c0-1.38-.5-2-1-3-1.072-2.143-.224-4.054 2-6 .5 2.5 2 4.9 4 6.5 2 1.6 3 3.5 3 5.5a7 7 0 1 1-14 0c0-1.153.433-2.294 1-3a2.5 2.5 0 0 0 2.5 2.5z"></path></svg> Hot','href':'/hot'},
+    {'label':'<svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="inline-block mr-1"><path d="M8.5 14.5A2.5 2.5 0 0 0 11 12c0-1.38-.5-2-1-3-1.072-2.143-.224-4.054 2-6 .5 2.5 2 4.9 4 6.5 2 1.6 3 3.5 3 5.5a7 7 0 1 1-14 0c0-1.153.433-2.294 1-3a2.5 2.5 0 0 0 2.5 2.5z"></path></svg><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="inline-block mr-1"><path d="M8.5 14.5A2.5 2.5 0 0 0 11 12c0-1.38-.5-2-1-3-1.072-2.143-.224-4.054 2-6 .5 2.5 2 4.9 4 6.5 2 1.6 3 3.5 3 5.5a7 7 0 1 1-14 0c0-1.153.433-2.294 1-3a2.5 2.5 0 0 0 2.5 2.5z"></path></svg> Hot-2','href':'/hot2'},
+    {'label':'By Option','href':'/packages/by-option'},
+    {'label':'By Family','href':'/packages/by-family'},
+    {'label':'Loop Family','href':'/purchase/family-loop'},
+    {'label':'<svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="inline-block mr-1"><path d="M19 21l-7-5-7 5V5a2 2 0 0 1 2-2h10a2 2 0 0 1 2 2z"></path></svg> Bookmark','href':'/bookmark'},
+  ]},
+  {'group':'Komunitas','items':[
+    {'label':'<svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="inline-block mr-1"><path d="M3 9l9-7 9 7v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"></path><polyline points="9 22 9 12 15 12 15 22"></polyline></svg> Akrab','href':'/family-plan'},
+    {'label':'<svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="inline-block mr-1"><circle cx="12" cy="12" r="10"></circle></svg> Circle','href':'/circle'},
+  ]},
+  {'group':'Toko','items':[
+    {'label':'Segments','href':'/store/segments'},
+    {'label':'Families','href':'/store/families'},
+    {'label':'All Packages','href':'/store/packages'},
+    {'label':'<svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="inline-block mr-1"><polyline points="20 12 20 22 4 22 4 12"></polyline><rect x="2" y="7" width="20" height="5"></rect><line x1="12" y1="22" x2="12" y2="7"></line><path d="M12 7H7.5a2.5 2.5 0 0 1 0-5C11 2 12 7 12 7z"></path><path d="M12 7h4.5a2.5 2.5 0 0 0 0-5C13 2 12 7 12 7z"></path></svg> Redemables','href':'/store/redemables'},
+  ]},
+  {'group':'Lainnya','items':[
+    {'label':'<svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="inline-block mr-1"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"></path><polyline points="14 2 14 8 20 8"></polyline><line x1="16" y1="13" x2="8" y2="13"></line><line x1="16" y1="17" x2="8" y2="17"></line><polyline points="10 9 9 9 8 9"></polyline></svg> Transaksi','href':'/transactions'},
+    {'label':'<svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="inline-block mr-1"><path d="M18 8A6 6 0 0 0 6 8c0 7-3 9-3 9h18s-3-2-3-9"></path><path d="M13.73 21a2 2 0 0 1-3.46 0"></path></svg> Notifikasi','href':'/notifications'},
+    {'label':'<svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="inline-block mr-1"><path d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7"></path><path d="M18.5 2.5a2.121 2.121 0 0 1 3 3L12 15l-4 1 1-4 9.5-9.5z"></path></svg> Register','href':'/register'},
+    {'label':'<svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="inline-block mr-1"><path d="M22 11.08V12a10 10 0 1 1-5.93-9.14"></path><polyline points="22 4 12 14.01 9 11.01"></polyline></svg> Validate MSISDN','href':'/validate-msisdn'},
+  ]},
+  {'group':'Settings','items':[
+    {'label':'<svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="inline-block mr-1"><path d="M4 22h14a2 2 0 0 0 2-2V7.5L14.5 2H6a2 2 0 0 0-2 2v4"></path><polyline points="14 2 14 8 20 8"></polyline><path d="M2 15h10"></path><path d="M6 11l-4 4 4 4"></path></svg> Monitoring','href':'/monitoring'},
+    {'label':'<svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="inline-block mr-1"><rect x="3" y="11" width="18" height="10" rx="2"></rect><circle cx="12" cy="5" r="2"></circle><path d="M12 7v4"></path><line x1="8" y1="16" x2="8" y2="16"></line><line x1="16" y1="16" x2="16" y2="16"></line></svg> Telegram','href':'/monitoring/telegram'},
+    {'label':'<svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="inline-block mr-1"><circle cx="12" cy="12" r="3"></circle><path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 0 1 0 2.83 2 2 0 0 1-2.83 0l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 0 1-2 2 2 2 0 0 1-2-2v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 0 1-2.83 0 2 2 0 0 1 0-2.83l.06-.06a1.65 1.65 0 0 0 .33-1.82 1.65 1.65 0 0 0-1.51-1H3a2 2 0 0 1-2-2 2 2 0 0 1 2-2h.09A1.65 1.65 0 0 0 4.6 9a1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 0 1 0-2.83 2 2 0 0 1 2.83 0l.06.06a1.65 1.65 0 0 0 1.82.33H9a1.65 1.65 0 0 0 1-1.51V3a2 2 0 0 1 2-2 2 2 0 0 1 2 2v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 0 1 2.83 0 2 2 0 0 1 0 2.83l-.06.06a1.65 1.65 0 0 0-.33 1.82V9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 0 1 2 2 2 2 0 0 1-2 2h-.09a1.65 1.65 0 0 0-1.51 1z"></path></svg> Decoy','href':'/settings/decoy'},
+    {'label':'<svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="inline-block mr-1"><path d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10c1.38 0 2.5-1.12 2.5-2.5 0-.61-.23-1.17-.61-1.61-.31-.35-.5-.81-.5-1.32 0-1.1.9-2 2-2h1.61c2.97 0 5.42-2.45 5.42-5.42C22 6.48 17.52 2 12 2zm-4.5 9c-.83 0-1.5-.67-1.5-1.5S6.67 8 7.5 8 9 8.67 9 9.5 8.33 11 7.5 11zm4-4c-.83 0-1.5-.67-1.5-1.5S10.67 4 11.5 4s1.5.67 1.5 1.5S12.33 7 11.5 7zm4.5 4c-.83 0-1.5-.67-1.5-1.5s.67-1.5 1.5-1.5 1.5.67 1.5 1.5-.67 1.5-1.5 1.5z"></path></svg> Tema','href':'/settings/theme'},
+  ]},
+] %}
+{% set path = request.url.path %}
+
+<!-- TOPBAR -->
+<header class="bg-slate-900/70 backdrop-blur border-b border-slate-800 sticky top-0 z-30">
+  <div class="flex items-center justify-between px-4 h-14 lg:pl-72">
+    <div class="flex items-center gap-3">
+      <button id="nav-toggle" class="lg:hidden text-slate-300 hover:text-white" aria-label="menu">
+        <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><line x1="3" y1="6" x2="21" y2="6"/><line x1="3" y1="12" x2="21" y2="12"/><line x1="3" y1="18" x2="21" y2="18"/></svg>
+      </button>
+      <a href="/" class="flex items-center gap-1.5 font-bold text-lg"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="#818cf8" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polygon points="13 2 3 14 12 14 11 22 21 10 12 10 13 2"></polygon></svg><span class="bg-gradient-to-r from-indigo-400 to-fuchsia-400 bg-clip-text text-transparent">me-cli</span></a>
+    </div>
+    <div class="flex items-center gap-2 text-sm">
+      {% if active_user %}
+        <a href="/accounts" class="text-slate-300 hover:text-white text-xs sm:text-sm"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="inline-block"><rect x="5" y="2" width="14" height="20" rx="2" ry="2"></rect><line x1="12" y1="18" x2="12.01" y2="18"></line></svg> {{ active_user.number }}</a>
+      {% endif %}
+      {% if webui_user %}
+        <span class="hidden sm:inline text-slate-600">·</span>
+        <span class="text-xs text-slate-400 hidden sm:inline"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="inline-block"><path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"></path><circle cx="12" cy="7" r="4"></circle></svg> <b class="text-slate-200">{{ webui_user.username }}</b></span>
+        <a href="/u/logout" class="text-xs text-slate-400 hover:text-red-300" title="Logout WebUI"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="inline-block"><path d="M18.36 6.64a9 9 0 1 1-12.73 0"></path><line x1="12" y1="2" x2="12" y2="12"></line></svg></a>
+      {% else %}
+        <a href="/u/login" class="btn btn-primary text-xs">Login</a>
+      {% endif %}
+    </div>
+  </div>
+</header>
+
+<!-- SIDEBAR -->
+<aside id="sidebar" class="fixed inset-y-0 left-0 w-64 bg-slate-900 border-r border-slate-800 z-40 transform -translate-x-full lg:translate-x-0 transition-transform overflow-y-auto">
+  <div class="p-4 border-b border-slate-800 hidden lg:block">
+    <div class="flex items-center gap-1.5 font-bold text-lg"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="#818cf8" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polygon points="13 2 3 14 12 14 11 22 21 10 12 10 13 2"></polygon></svg><span class="bg-gradient-to-r from-indigo-400 to-fuchsia-400 bg-clip-text text-transparent">me-cli</span></div>
+    <div class="text-xs text-slate-500">myXL CLI · WebUI</div>
+  </div>
+  <nav class="p-3 space-y-1">
+    {% for sec in sections %}
+      {% if sec.group %}
+        <div class="text-xs uppercase tracking-wider text-slate-500 mt-4 mb-1 px-2">{{ sec.group }}</div>
+        {% for it in sec['items'] %}
+          <a href="{{ it.href }}" class="block px-3 py-2 rounded text-sm transition-colors {% if path == it.href or (it.href != '/' and path.startswith(it.href)) %}bg-indigo-600/30 text-indigo-200 border border-indigo-500/40{% else %}text-slate-300 hover:bg-slate-800 hover:text-white{% endif %}">{{ it.label | safe }}</a>
+        {% endfor %}
+      {% else %}
+        <a href="{{ sec.href }}" class="block px-3 py-2 rounded text-sm transition-colors {% if path == sec.href %}bg-indigo-600/30 text-indigo-200 border border-indigo-500/40{% else %}text-slate-300 hover:bg-slate-800 hover:text-white{% endif %}"><span class="inline-block align-middle mr-2">{{ sec.icon | safe }}</span> {{ sec.label }}</a>
+      {% endif %}
+    {% endfor %}
   </nav>
+  <div class="p-4 text-xs text-slate-600 border-t border-slate-800 mt-4">
+    {% if webui_user %}
+    <div class="mb-2 p-2 bg-slate-800/60 rounded">
+      <div class="text-slate-400">Login sebagai:</div>
+      <div class="font-mono text-slate-200">{{ webui_user.username }}</div>
+      <a href="/u/logout" class="text-red-400 hover:text-red-300 mt-1 inline-block"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="inline-block"><path d="M18.36 6.64a9 9 0 1 1-12.73 0"></path><line x1="12" y1="2" x2="12" y2="12"></line></svg> Logout</a>
+    </div>
+    {% endif %}
+    <div>v1.0 · port 8089</div>
+    <div class="mt-1"><a href="https://github.com/purplemashu/me-cli-sunset" class="hover:text-slate-400" target="_blank">repo upstream ↗</a></div>
+  </div>
+</aside>
 
-  <!-- ====== JS Sederhana ====== -->
-  <script>
-    (function() {
-      const sidebar = document.getElementById('sidebar');
-      const backdrop = document.getElementById('nav-backdrop');
-      const toggleBtn = document.getElementById('nav-toggle');
+<!-- Backdrop -->
+<div id="nav-backdrop" class="lg:hidden fixed inset-0 bg-black/50 z-30 hidden"></div>
 
-      function openSidebar() {
-        sidebar.classList.remove('-translate-x-full');
-        backdrop.classList.remove('hidden');
+<!-- MAIN -->
+<main class="lg:pl-64 pb-20 lg:pb-8 min-w-0 max-w-full overflow-x-clip">
+  <div class="px-4 py-6 max-w-5xl mx-auto min-w-0 w-full">
+    {% block content %}{% endblock %}
+  </div>
+</main>
+
+<!-- BOTTOM NAV (mobile) -->
+<nav class="lg:hidden fixed bottom-0 inset-x-0 bg-slate-900/95 backdrop-blur border-t border-slate-800 z-30">
+  <div class="grid grid-cols-5 text-xs">
+    <a href="/" class="flex flex-col items-center py-2 {% if path == '/' %}text-indigo-300{% else %}text-slate-400{% endif %}"><span class="text-base mb-1"><svg width="20" height="20" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" viewBox="0 0 24 24"><path d="M3 9l9-7 9 7v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"></path><polyline points="9 22 9 12 15 12 15 22"></polyline></svg></span>Home</a>
+    <a href="/packages/my" class="flex flex-col items-center py-2 {% if path == '/packages/my' %}text-indigo-300{% else %}text-slate-400{% endif %}"><span class="text-base mb-1"><svg width="20" height="20" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" viewBox="0 0 24 24"><path d="M21 16V8a2 2 0 0 0-1-1.73l-7-4a2 2 0 0 0-2 0l-7 4A2 2 0 0 0 3 8v8a2 2 0 0 0 1 1.73l7 4a2 2 0 0 0 2 0l7-4A2 2 0 0 0 21 16z"></path><polyline points="3.27 6.96 12 12.01 20.73 6.96"></polyline><line x1="12" y1="22.08" x2="12" y2="12"></line></svg></span>Paket</a>
+    <a href="/hot" class="flex flex-col items-center py-2 {% if path == '/hot' %}text-indigo-300{% else %}text-slate-400{% endif %}"><span class="text-base mb-1"><svg width="20" height="20" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" viewBox="0 0 24 24"><path d="M8.5 14.5A2.5 2.5 0 0 0 11 12c0-1.38-.5-2-1-3-1.072-2.143-.224-4.054 2-6 .5 2.5 2 4.9 4 6.5 2 1.6 3 3.5 3 5.5a7 7 0 1 1-14 0c0-1.153.433-2.294 1-3a2.5 2.5 0 0 0 2.5 2.5z"></path></svg></span>Hot</a>
+    <a href="/transactions" class="flex flex-col items-center py-2 {% if path == '/transactions' %}text-indigo-300{% else %}text-slate-400{% endif %}"><span class="text-base mb-1"><svg width="20" height="20" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" viewBox="0 0 24 24"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"></path><polyline points="14 2 14 8 20 8"></polyline><line x1="16" y1="13" x2="8" y2="13"></line><line x1="16" y1="17" x2="8" y2="17"></line><polyline points="10 9 9 9 8 9"></polyline></svg></span>Histori</a>
+    <a href="/accounts" class="flex flex-col items-center py-2 {% if path == '/accounts' %}text-indigo-300{% else %}text-slate-400{% endif %}"><span class="text-base mb-1"><svg width="20" height="20" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" viewBox="0 0 24 24"><path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"></path><circle cx="12" cy="7" r="4"></circle></svg></span>Akun</a>
+  </div>
+</nav>
+
+<!-- ====== JAVASCRIPT (dengan fungsi yang sudah diperbaiki) ====== -->
+<script>
+  (function() {
+    const sidebar = document.getElementById('sidebar');
+    const backdrop = document.getElementById('nav-backdrop');
+    const toggleBtn = document.getElementById('nav-toggle');
+
+    function openSidebar() {
+      sidebar.classList.remove('-translate-x-full');
+      backdrop.classList.remove('hidden');
+    }
+    function closeSidebar() {
+      sidebar.classList.add('-translate-x-full');
+      backdrop.classList.add('hidden');
+    }
+
+    if (toggleBtn) toggleBtn.addEventListener('click', openSidebar);
+    if (backdrop) backdrop.addEventListener('click', closeSidebar);
+  })();
+
+  // ====== CONFIRM MODAL ======
+  (function(){
+    const modal = document.getElementById('confirm-modal');
+    if (!modal) return;
+    const backdrop = document.getElementById('confirm-backdrop'),
+          panel = document.getElementById('confirm-panel'),
+          iconEl = document.getElementById('confirm-icon'),
+          titleEl = document.getElementById('confirm-title'),
+          msgEl = document.getElementById('confirm-message'),
+          detailWrap = document.getElementById('confirm-detail-wrap'),
+          detailEl = document.getElementById('confirm-detail'),
+          okBtn = document.getElementById('confirm-ok'),
+          cancelBtn = document.getElementById('confirm-cancel');
+    let pending = null;
+    const VARIANTS = {
+      danger:  { icon:'🗑️', iconCls:'bg-red-500/15 text-red-300 border-red-500/30', okCls:'btn-danger', okText:'Hapus' },
+      warning: { icon:'⚠️', iconCls:'bg-amber-500/15 text-amber-300 border-amber-500/30', okCls:'btn-primary', okText:'Lanjut' },
+      primary: { icon:'✨', iconCls:'bg-indigo-500/15 text-indigo-300 border-indigo-500/30', okCls:'btn-primary', okText:'Lanjut' },
+      pay:     { icon:'💸', iconCls:'bg-emerald-500/15 text-emerald-300 border-emerald-500/30', okCls:'btn-primary', okText:'Bayar' },
+      otp:     { icon:'📩', iconCls:'bg-sky-500/15 text-sky-300 border-sky-500/30', okCls:'btn-primary', okText:'Kirim OTP' },
+    };
+    function applyVariant(v) {
+      const cfg = VARIANTS[v] || VARIANTS.warning;
+      iconEl.className = 'w-11 h-11 rounded-full flex items-center justify-center shrink-0 border ' + cfg.iconCls;
+      iconEl.innerHTML = cfg.icon;
+      okBtn.className = 'btn ' + cfg.okCls + ' text-sm px-4';
+      return cfg;
+    }
+    function show({title, message, detail, variant, okText, cancelText}, onOk, onCancel) {
+      const cfg = applyVariant(variant);
+      titleEl.textContent = title || 'Konfirmasi';
+      msgEl.innerHTML = message || 'Yakin mau lanjut?';
+      if (detail) { detailEl.textContent = detail; detailWrap.classList.remove('hidden'); }
+      else { detailWrap.classList.add('hidden'); }
+      okBtn.textContent = okText || cfg.okText;
+      cancelBtn.textContent = cancelText || 'Batal';
+      pending = { onOk, onCancel };
+      modal.style.opacity = '1';
+      modal.classList.remove('pointer-events-none');
+      panel.style.transform = 'scale(1)';
+      panel.style.opacity = '1';
+      setTimeout(() => okBtn.focus(), 50);
+    }
+    function hide(cancelled) {
+      modal.style.opacity = '0';
+      modal.classList.add('pointer-events-none');
+      panel.style.transform = 'scale(0.96)';
+      panel.style.opacity = '0';
+      const p = pending; pending = null;
+      if (p && cancelled && p.onCancel) p.onCancel();
+    }
+    okBtn.addEventListener('click', () => {
+      const p = pending; pending = null;
+      modal.style.opacity = '0';
+      modal.classList.add('pointer-events-none');
+      if (p && p.onOk) p.onOk();
+    });
+    cancelBtn.addEventListener('click', () => hide(true));
+    backdrop.addEventListener('click', () => hide(true));
+    document.addEventListener('keydown', e => {
+      if (modal.style.opacity === '1') {
+        if (e.key === 'Escape') hide(true);
+        else if (e.key === 'Enter') okBtn.click();
       }
-      function closeSidebar() {
-        sidebar.classList.add('-translate-x-full');
-        backdrop.classList.add('hidden');
-      }
+    });
+    window.__confirm = show;
 
-      if (toggleBtn) toggleBtn.addEventListener('click', openSidebar);
-      if (backdrop) backdrop.addEventListener('click', closeSidebar);
-    })();
-  </script>
+    function loaderMessageForForm(f) {
+      const action = (f.getAttribute('action') || location.pathname).toLowerCase();
+      const method = (f.getAttribute('method') || 'get').toUpperCase();
+      if (action.includes('/purchase/')) return 'Memproses pembelian…';
+      if (action.includes('/login/request-otp')) return 'Mengirim OTP…';
+      if (action.includes('/login/submit-otp')) return 'Verifikasi OTP…';
+      if (action.includes('/unsubscribe')) return 'Unsubscribe paket…';
+      if (action.includes('/bookmark')) return 'Update bookmark…';
+      if (action.includes('/register')) return 'Memproses register…';
+      return method === 'GET' ? 'Memuat…' : 'Memproses…';
+    }
+
+    function resetConfirmState(f) {
+      delete f.dataset.__confirmed;
+      delete f.dataset.__submitting;
+      delete f.dataset.__loaderShown;
+    }
+
+    function showConfirmForForm(f) {
+      resetConfirmState(f);
+      show(readAttrs(f, f), () => submitConfirmedForm(f), null);
+    }
+
+    // ====== PERBAIKAN UTAMA DISINI ======
+    // Gunakan submit form alami, bukan fetch + document.write
+    function submitConfirmedForm(f) {
+      delete f.dataset.__confirmed;
+      if (window.__loader) window.__loader.show(loaderMessageForForm(f));
+      // Biarkan browser menangani submit (full page reload)
+      f.submit();
+    }
+
+    function interpolateForm(template, form) {
+      if (!template || !form) return template;
+      return template.replace(/\{field:([\w-]+)\}/g, (_, name) => {
+        const inp = form.elements && form.elements[name];
+        if (!inp) return '';
+        const v = (inp.value || '').toString();
+        const div = document.createElement('div');
+        div.textContent = v;
+        return div.innerHTML;
+      });
+    }
+    function readAttrs(el, form) {
+      const f = form || (el instanceof HTMLFormElement ? el : null);
+      return {
+        message: interpolateForm(el.getAttribute('data-confirm'), f),
+        title: el.getAttribute('data-confirm-title'),
+        detail: interpolateForm(el.getAttribute('data-confirm-detail'), f),
+        variant: el.getAttribute('data-confirm-variant'),
+        okText: el.getAttribute('data-confirm-ok'),
+        cancelText: el.getAttribute('data-confirm-cancel'),
+      };
+    }
+
+    // Intercept form submits
+    document.addEventListener('submit', function(e){
+      const f = e.target;
+      if (!(f instanceof HTMLFormElement)) return;
+      if (!f.hasAttribute('data-confirm')) return;
+      if (f.dataset.__confirmed) return;
+      e.preventDefault();
+      e.stopImmediatePropagation();
+      showConfirmForForm(f);
+    }, true);
+
+    document.addEventListener('click', function(e){
+      const btn = e.target.closest('[data-confirm-trigger]');
+      if (!btn) return;
+      const f = btn.closest('form');
+      if (!f || !f.hasAttribute('data-confirm')) return;
+      e.preventDefault();
+      e.stopImmediatePropagation();
+      if (!f.checkValidity()) { f.reportValidity(); return; }
+      showConfirmForForm(f);
+    }, true);
+
+    document.addEventListener('click', function(e){
+      const a = e.target.closest('a[data-confirm]');
+      if (!a) return;
+      if (a.dataset.__confirmed) return;
+      e.preventDefault();
+      e.stopImmediatePropagation();
+      const attrs = readAttrs(a);
+      show(attrs,
+        () => {
+          a.dataset.__confirmed = '1';
+          if (window.__loader) window.__loader.show('Memproses…');
+          setTimeout(() => { window.location.href = a.href; }, 50);
+        },
+        null);
+    }, true);
+  })();
+
+  // Global loader (existing)
+  (function(){
+    const loader = document.getElementById('page-loader');
+    const msg = document.getElementById('page-loader-msg');
+    const sub = document.getElementById('page-loader-sub');
+    const icon = document.getElementById('page-loader-icon');
+    const bar = document.getElementById('page-loader-bar');
+    const dots = document.getElementById('page-loader-dots');
+    if (!loader) return;
+    let timer = null;
+
+    function show(text, opts) {
+      loader.style.opacity = '1';
+      loader.classList.remove('pointer-events-none');
+      msg.textContent = text || 'Memuat…';
+      sub.textContent = opts?.sub || 'Tunggu sebentar ya cuy';
+      icon.className = 'fa-solid fa-spinner fa-spin';
+      if (opts?.payment) {
+        icon.className = 'fa-solid fa-credit-card animate-pulse';
+        bar.classList.remove('hidden');
+        dots.classList.add('hidden');
+      } else {
+        bar.classList.add('hidden');
+        dots.classList.remove('hidden');
+      }
+    }
+    function hide() {
+      loader.style.opacity = '0';
+      loader.classList.add('pointer-events-none');
+    }
+    window.__loader = { show, hide };
+  })();
+</script>
 </body>
 </html>
