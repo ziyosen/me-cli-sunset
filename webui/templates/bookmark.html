@@ -1,33 +1,75 @@
 {% extends "base.html" %}
 {% block title %}Bookmark · me-cli{% endblock %}
 {% block content %}
-<h1 class="text-xl font-bold mb-4">🔖 Bookmark</h1>
-{% if not bookmarks %}
-<div class="card text-slate-400 text-sm">Belum ada bookmark. Tambahin dari halaman detail paket.</div>
-{% endif %}
-<div class="space-y-2">
-{% for bm in bookmarks %}
-<div class="card flex items-center justify-between gap-3">
-  <div class="min-w-0">
-    <div class="font-medium truncate">{{ bm.family_name }} · {{ bm.variant_name }}</div>
-    <div class="text-sm text-slate-300 truncate">{{ bm.option_name }} · order {{ bm.order }}</div>
-    <div class="text-xs text-slate-500 code-wrap">{{ bm.family_code }}</div>
-  </div>
-  <div class="flex gap-2 shrink-0">
-    <a class="btn btn-secondary" href="/packages/by-family?code={{ bm.family_code }}">Buka</a>
-    <form action="/bookmark/remove" method="post"
-          data-confirm="Bookmark <b>{{ bm.option_name }}</b> ({{ bm.family_name }}) bakal dihapus."
-          data-confirm-title="Hapus bookmark?"
-          data-confirm-variant="danger"
-          data-confirm-ok="Hapus">
-      <input type="hidden" name="family_code" value="{{ bm.family_code }}">
-      <input type="hidden" name="is_enterprise" value="{{ bm.is_enterprise }}">
-      <input type="hidden" name="variant_name" value="{{ bm.variant_name }}">
-      <input type="hidden" name="order" value="{{ bm.order }}">
-      <button class="btn btn-danger" type="submit">Hapus</button>
-    </form>
-  </div>
+
+<!-- Judul Halaman -->
+<div class="mb-6">
+  <h1 class="text-2xl font-bold text-white flex items-center gap-2">
+    <span>🔖</span> Bookmark
+  </h1>
+  <p class="text-sm text-slate-400 mt-1">Paket favorit yang disimpan untuk akses cepat.</p>
 </div>
-{% endfor %}
+
+<!-- Daftar Bookmark -->
+<div class="space-y-3">
+  {% if not bookmarks %}
+    <!-- Empty State -->
+    <div class="bg-slate-800/50 border border-slate-700/50 rounded-xl p-8 text-center text-slate-400">
+      <div class="text-4xl mb-3">📭</div>
+      <p class="text-base font-medium text-slate-300">Belum ada bookmark.</p>
+      <p class="text-sm mt-1">Tambah dari halaman <a href="/packages/by-family" class="text-indigo-400 hover:text-indigo-300">detail paket</a>.</p>
+    </div>
+  {% endif %}
+
+  {% for bm in bookmarks %}
+  <div class="group bg-slate-800/50 hover:bg-slate-800/80 border border-slate-700/50 hover:border-indigo-500/40 rounded-xl p-4 transition-all">
+    <!-- Layout Flex untuk Desktop, Stack untuk Mobile -->
+    <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-3">
+      
+      <!-- Informasi Bookmark -->
+      <div class="flex items-start gap-3 min-w-0">
+        <div class="w-10 h-10 rounded-full bg-indigo-500/20 flex items-center justify-center text-indigo-300 text-lg shrink-0">
+          📦
+        </div>
+        <div class="min-w-0">
+          <div class="font-medium text-white truncate">
+            {{ bm.family_name }} · {{ bm.variant_name }}
+          </div>
+          <div class="text-sm text-slate-300 truncate">
+            {{ bm.option_name }}
+            <span class="text-slate-500 text-xs">· order {{ bm.order }}</span>
+          </div>
+          <div class="text-xs text-slate-500 code-wrap font-mono mt-1 bg-slate-900/50 px-2 py-0.5 rounded inline-block border border-slate-700/30">
+            {{ bm.family_code }}
+          </div>
+        </div>
+      </div>
+
+      <!-- Aksi -->
+      <div class="flex flex-wrap items-center gap-2 shrink-0">
+        <a href="/packages/by-family?code={{ bm.family_code }}" 
+           class="px-3 py-1.5 bg-slate-700 hover:bg-slate-600 text-slate-300 hover:text-white rounded-lg text-sm transition flex items-center gap-1">
+          <span>📂</span> Buka
+        </a>
+        
+        <form action="/bookmark/remove" method="post"
+              data-confirm="Bookmark <b>{{ bm.option_name }}</b> ({{ bm.family_name }}) akan dihapus dari daftar favorit."
+              data-confirm-title="Hapus bookmark?"
+              data-confirm-variant="danger"
+              data-confirm-ok="Hapus">
+          <input type="hidden" name="family_code" value="{{ bm.family_code }}">
+          <input type="hidden" name="is_enterprise" value="{{ bm.is_enterprise }}">
+          <input type="hidden" name="variant_name" value="{{ bm.variant_name }}">
+          <input type="hidden" name="order" value="{{ bm.order }}">
+          <button class="px-3 py-1.5 bg-red-500/20 hover:bg-red-500/30 text-red-300 hover:text-red-200 rounded-lg text-sm transition border border-red-500/30 hover:border-red-500/50 flex items-center gap-1" type="submit">
+            <span>🗑️</span> Hapus
+          </button>
+        </form>
+      </div>
+      
+    </div>
+  </div>
+  {% endfor %}
 </div>
+
 {% endblock %}
