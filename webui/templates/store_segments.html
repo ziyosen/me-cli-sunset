@@ -1,45 +1,105 @@
 {% extends "base.html" %}
 {% block title %}Store Segments · me-cli{% endblock %}
 {% block content %}
-<div class="flex items-center justify-between mb-4 gap-3">
-  <h1 class="text-2xl font-bold">🛍️ Store Segments</h1>
-  <form method="get" class="text-sm">
-    <label class="flex items-center gap-1 cursor-pointer"><input type="checkbox" name="enterprise" value="true" {% if enterprise %}checked{% endif %} onchange="this.form.submit()"> <span class="text-slate-300">Enterprise</span></label>
+
+<!-- ====== HEADER ====== -->
+<div class="flex flex-col sm:flex-row sm:items-center justify-between mb-6 gap-3">
+  <div>
+    <h1 class="text-2xl font-bold text-white flex items-center gap-2">
+      <span>🛍️</span> Store Segments
+    </h1>
+    <p class="text-sm text-slate-400 mt-1">Koleksi banner dan penawaran dari berbagai segmen.</p>
+  </div>
+  
+  <!-- Filter Enterprise -->
+  <form method="get" class="flex items-center gap-2 bg-slate-800/50 border border-slate-700/50 rounded-lg px-3 py-1.5">
+    <label class="flex items-center gap-2 cursor-pointer text-sm text-slate-300">
+      <input type="checkbox" name="enterprise" value="true" {% if enterprise %}checked{% endif %} 
+             class="accent-indigo-500 w-4 h-4" onchange="this.form.submit()">
+      <span>Enterprise</span>
+    </label>
   </form>
 </div>
 
+<!-- ====== EMPTY STATE ====== -->
 {% if not segments %}
-<div class="card text-slate-400 text-sm">Tidak ada segment.</div>
+<div class="bg-slate-800/50 border border-slate-700/50 rounded-xl p-8 text-center text-slate-400">
+  <div class="text-4xl mb-3">📭</div>
+  <p class="text-base font-medium text-slate-300">Tidak ada segment yang tersedia.</p>
+  <p class="text-sm mt-1">Coba atur filter atau refresh halaman.</p>
+</div>
 {% endif %}
 
+<!-- ====== SEGMENTS ====== -->
 {% for seg in segments %}
-<section class="mb-6">
-  <h2 class="text-sm uppercase tracking-wider text-slate-400 mb-2">{{ seg.title }}</h2>
-  <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-3">
+<section class="mb-8">
+  <!-- Segment Header -->
+  <div class="flex items-center gap-3 mb-4">
+    <div class="h-4 w-1 rounded-full bg-indigo-500"></div>
+    <h2 class="text-sm uppercase tracking-wider text-slate-400 font-medium">{{ seg.title }}</h2>
+    <span class="flex-1 border-t border-slate-700/50"></span>
+  </div>
+
+  <!-- Banners Grid -->
+  <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
     {% for b in seg.banners %}
-    {% if b.href %}
-    <a href="{{ b.href }}" class="card hover:border-indigo-500 transition-all group overflow-hidden">
-    {% else %}
-    <div class="card opacity-70">
-    {% endif %}
+    {% set is_link = b.href is defined and b.href %}
+    
+    <{% if is_link %}a href="{{ b.href }}"{% else %}div{% endif %} 
+       class="group bg-slate-800/50 {% if is_link %}hover:bg-slate-700 border border-slate-700/50 hover:border-indigo-500/40 transition-all{% else %}border border-slate-700/50 opacity-80{% endif %} rounded-xl overflow-hidden">
+      
+      <!-- Banner Image -->
       {% if b.image_url %}
-      <div class="aspect-[16/9] -mx-4 -mt-4 mb-3 bg-slate-800 overflow-hidden">
-        <img src="{{ b.image_url }}" alt="" class="w-full h-full object-cover">
+      <div class="aspect-[16/9] bg-slate-800 overflow-hidden relative">
+        <img src="{{ b.image_url }}" alt="" class="w-full h-full object-cover transition-transform duration-300 {% if is_link %}group-hover:scale-105{% endif %}">
+        {% if is_link %}
+        <div class="absolute inset-0 bg-gradient-to-t from-slate-900/60 to-transparent opacity-0 group-hover:opacity-100 transition-opacity"></div>
+        {% endif %}
+      </div>
+      {% else %}
+      <div class="aspect-[16/9] bg-slate-800 flex items-center justify-center text-4xl">
+        🖼️
       </div>
       {% endif %}
-      <div class="font-bold leading-snug group-hover:text-indigo-300 line-clamp-2">{{ b.title }}</div>
-      {% if b.family_name %}<div class="text-xs text-slate-400 mt-0.5">{{ b.family_name }}</div>{% endif %}
-      <div class="flex items-baseline justify-between mt-3">
-        {% if b.price %}
-        <div class="text-lg font-bold text-indigo-300">{{ b.price | rp }}</div>
-        {% if b.original_price and b.original_price != b.price %}<div class="text-xs text-slate-500 line-through">{{ b.original_price | rp }}</div>{% endif %}
+
+      <!-- Content -->
+      <div class="p-4">
+        <div class="font-bold text-white {% if is_link %}group-hover:text-indigo-300 transition{% endif %} line-clamp-2">
+          {{ b.title }}
+        </div>
+        {% if b.family_name %}
+        <div class="text-xs text-slate-400 mt-0.5 truncate">{{ b.family_name }}</div>
         {% endif %}
-        {% if b.validity %}<div class="text-xs text-slate-400">⏱ {{ b.validity }}</div>{% endif %}
+        
+        <!-- Price & Validity -->
+        <div class="flex items-baseline justify-between mt-3">
+          <div>
+            {% if b.price %}
+            <div class="text-lg font-bold text-indigo-300">{{ b.price | rp }}</div>
+            {% if b.original_price and b.original_price != b.price %}
+            <div class="text-xs text-slate-500 line-through">{{ b.original_price | rp }}</div>
+            {% endif %}
+            {% endif %}
+          </div>
+          {% if b.validity %}
+          <div class="text-xs text-slate-400 flex items-center gap-1">
+            <span>⏱️</span> {{ b.validity }}
+          </div>
+          {% endif %}
+        </div>
+
+        <!-- Warning for non-link items -->
+        {% if not is_link %}
+        <div class="mt-2 text-xs text-amber-400 flex items-center gap-1">
+          <span>⚠️</span> action: {{ b.action_type }} (belum didukung)
+        </div>
+        {% endif %}
       </div>
-      {% if not b.href %}<div class="text-xs text-amber-400 mt-2">⚠ action: {{ b.action_type }} (belum di-handle)</div>{% endif %}
-    {% if b.href %}</a>{% else %}</div>{% endif %}
+      
+    </{% if is_link %}a{% else %}div{% endif %}>
     {% endfor %}
   </div>
 </section>
 {% endfor %}
+
 {% endblock %}
