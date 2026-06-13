@@ -1,13 +1,59 @@
 {% extends "base.html" %}
 {% block title %}{{ title }} · me-cli{% endblock %}
 {% block content %}
-<div class="flex items-center justify-between mb-4">
-  <h1 class="text-xl font-bold">{{ title }}</h1>
-  <form method="get" class="flex items-center gap-2 text-sm">
-    <label class="flex items-center gap-1"><input type="checkbox" name="enterprise" value="true" {% if enterprise %}checked{% endif %} onchange="this.form.submit()"> Enterprise</label>
+
+<!-- ====== HEADER ====== -->
+<div class="flex flex-col sm:flex-row sm:items-center justify-between mb-6 gap-3">
+  <div>
+    <h1 class="text-2xl font-bold text-white flex items-center gap-2">
+      <span>🛍️</span> {{ title }}
+    </h1>
+    <p class="text-sm text-slate-400 mt-1">Data dari store.</p>
+  </div>
+  
+  <!-- Filter Enterprise -->
+  <form method="get" class="flex items-center gap-2 bg-slate-800/50 border border-slate-700/50 rounded-lg px-3 py-1.5">
+    <label class="flex items-center gap-2 cursor-pointer text-sm text-slate-300">
+      <input type="checkbox" name="enterprise" value="true" {% if enterprise %}checked{% endif %} 
+             class="accent-indigo-500 w-4 h-4" onchange="this.form.submit()">
+      <span>Enterprise</span>
+    </label>
   </form>
 </div>
-<div class="card">
-  <pre class="text-xs overflow-x-auto bg-slate-950 p-2 rounded">{{ res | tojson(indent=2) }}</pre>
+
+<!-- ====== DATA RESPONSE ====== -->
+<div class="bg-slate-800/50 border border-slate-700/50 rounded-xl p-5">
+  <div class="flex items-center justify-between mb-3">
+    <div class="flex items-center gap-2">
+      <span class="text-lg">📄</span>
+      <h2 class="font-semibold text-white">Data Respons</h2>
+    </div>
+    <button onclick="copyJSON()" class="text-xs text-indigo-400 hover:text-indigo-300 transition flex items-center gap-1">
+      <span>📋</span> Salin
+    </button>
+  </div>
+  
+  <div class="bg-slate-900/70 border border-slate-700/50 rounded-lg p-3 overflow-x-auto max-h-[400px] overflow-y-auto custom-scrollbar">
+    <pre class="text-xs font-mono text-slate-300 whitespace-pre-wrap break-words">{{ res | tojson(indent=2) }}</pre>
+  </div>
 </div>
+
+<script>
+  function copyJSON() {
+    const jsonText = document.querySelector('pre')?.textContent || '';
+    navigator.clipboard.writeText(jsonText).then(() => {
+      alert('JSON berhasil disalin!');
+    }).catch(() => {
+      alert('Gagal menyalin JSON.');
+    });
+  }
+</script>
+
+<style>
+  .custom-scrollbar::-webkit-scrollbar { width: 4px; }
+  .custom-scrollbar::-webkit-scrollbar-track { background: #1e293b; border-radius: 4px; }
+  .custom-scrollbar::-webkit-scrollbar-thumb { background: #475569; border-radius: 4px; }
+  .custom-scrollbar::-webkit-scrollbar-thumb:hover { background: #64748b; }
+</style>
+
 {% endblock %}
