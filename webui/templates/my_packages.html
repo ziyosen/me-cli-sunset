@@ -2,77 +2,130 @@
 {% block title %}Paket Saya · me-cli{% endblock %}
 {% block breadcrumb %}{% include "partials/breadcrumb.html" ignore missing %}{% endblock %}
 {% block content %}
-<div class="flex items-center justify-between mb-4">
-  <h1 class="text-2xl font-bold">📦 Paket Saya</h1>
-  <a href="/packages/my" class="text-xs text-slate-400 hover:text-slate-200">↻ Refresh</a>
+
+<!-- ====== HEADER ====== -->
+<div class="flex flex-col sm:flex-row sm:items-center justify-between mb-6">
+  <div>
+    <h1 class="text-2xl font-bold text-white flex items-center gap-2">
+      <span>📦</span> Paket Saya
+    </h1>
+    <p class="text-sm text-slate-400 mt-1">Daftar paket aktif di akun kamu.</p>
+  </div>
+  <a href="/packages/my" class="inline-flex items-center gap-1 text-xs text-slate-400 hover:text-white transition px-3 py-1.5 bg-slate-800/50 rounded-lg border border-slate-700/50 mt-2 sm:mt-0">
+    <span>↻</span> Refresh
+  </a>
 </div>
 
-{% if request.query_params.get('msg') == 'ok' %}<div class="alert-success">✅ Berhasil unsubscribe</div>{% endif %}
-{% if request.query_params.get('msg') == 'fail' %}<div class="alert-error">⚠️ Gagal unsubscribe</div>{% endif %}
+<!-- ====== NOTIFICATIONS ====== -->
+{% if request.query_params.get('msg') == 'ok' %}
+<div class="mb-4 px-4 py-3 rounded-xl bg-emerald-500/10 border border-emerald-500/30 text-emerald-300 flex items-center gap-2">
+  <span class="text-lg">✅</span> Berhasil unsubscribe.
+</div>
+{% elif request.query_params.get('msg') == 'fail' %}
+<div class="mb-4 px-4 py-3 rounded-xl bg-red-500/10 border border-red-500/30 text-red-300 flex items-center gap-2">
+  <span class="text-lg">❌</span> Gagal unsubscribe. Silakan coba lagi.
+</div>
+{% endif %}
 
+<!-- ====== EMPTY STATE ====== -->
 {% if not quotas %}
-<div class="card text-slate-400">
-  Tidak ada paket aktif terdeteksi.
-  <details class="mt-2"><summary class="text-xs cursor-pointer text-slate-500">Raw response</summary>
-    <pre class="text-xs overflow-x-auto bg-slate-950 p-2 rounded mt-1">{{ raw | tojson(indent=2) }}</pre>
+<div class="bg-slate-800/50 border border-slate-700/50 rounded-xl p-8 text-center text-slate-400">
+  <div class="text-4xl mb-3">📭</div>
+  <p class="text-base font-medium text-slate-300">Tidak ada paket aktif terdeteksi.</p>
+  <details class="mt-4 text-left">
+    <summary class="cursor-pointer text-xs text-indigo-300 hover:text-indigo-200">Lihat raw response</summary>
+    <pre class="text-xs overflow-x-auto bg-slate-950 p-3 rounded mt-2 border border-slate-700/50">{{ raw | tojson(indent=2) }}</pre>
   </details>
 </div>
 {% endif %}
 
-<div class="space-y-3">
-{% for q in quotas %}
-<div class="card">
-  <div class="flex items-start justify-between gap-3">
-    <div class="min-w-0">
-      <div class="text-xs text-slate-400 truncate">{{ q.group_name }}</div>
-      <div class="font-bold text-lg truncate">{{ q.name }}</div>
-      {% if q.expired_at %}<div class="text-xs text-slate-500 mt-0.5">Aktif s/d {{ q.expired_at | date }}</div>{% endif %}
-    </div>
-    <div class="flex gap-2 shrink-0">
-      <a class="btn btn-secondary text-xs" href="/packages/by-option?code={{ q.quota_code }}">Detail</a>
-      <form action="/packages/my/unsubscribe" method="post"
-            data-confirm="Paket <b>{{ q.name }}</b> bakal di-stop sebelum masa aktif habis. Sisa kuotanya hangus."
-            data-confirm-title="Unsubscribe paket?"
-            data-confirm-variant="danger"
-            data-confirm-ok="Unsubscribe">
-        <input type="hidden" name="quota_code" value="{{ q.quota_code }}">
-        <input type="hidden" name="product_domain" value="{{ q.product_domain }}">
-        <input type="hidden" name="product_subscription_type" value="{{ q.product_subscription_type }}">
-        <button class="btn btn-danger text-xs" type="submit">Stop</button>
-      </form>
-    </div>
-  </div>
-
-  {% if q.benefits %}
-  <div class="mt-4 space-y-3">
-    {% for b in q.benefits %}
-    <div>
-      <div class="flex items-center justify-between text-sm mb-1">
-        <div class="font-medium flex items-center gap-2">
-          {% if b.data_type == 'DATA' %}📊{% elif b.data_type == 'VOICE' %}📞{% elif b.data_type == 'TEXT' %}💬{% else %}🎯{% endif %}
-          <span>{{ b.name }}</span>
-          {% if b.is_unlimited %}<span class="text-xs bg-emerald-600/30 text-emerald-300 px-2 py-0.5 rounded">∞ Unlimited</span>{% endif %}
+<!-- ====== PAKET LIST ====== -->
+<div class="space-y-4">
+  {% for q in quotas %}
+  <div class="bg-slate-800/50 border border-slate-700/50 hover:border-indigo-500/40 rounded-xl p-5 transition-all">
+    
+    <!-- Header Paket -->
+    <div class="flex flex-col sm:flex-row sm:items-start justify-between gap-3">
+      <div class="min-w-0 flex-1">
+        <div class="text-xs text-slate-400 truncate flex items-center gap-2">
+          <span>📁</span> {{ q.group_name }}
         </div>
-        <div class="text-xs text-slate-400 font-mono">{{ b.rem_disp }}{% if b.unit %} {{ b.unit }}{% endif %} / {{ b.tot_disp }}{% if b.unit %} {{ b.unit }}{% endif %}</div>
+        <div class="font-bold text-lg text-white truncate mt-1">{{ q.name }}</div>
+        {% if q.expired_at %}
+        <div class="text-xs text-slate-400 mt-1 flex items-center gap-1">
+          <span>🕐</span> Aktif s/d {{ q.expired_at | date }}
+        </div>
+        {% endif %}
       </div>
-      {% if not b.is_unlimited and b.pct is defined %}
-      <div class="h-2 bg-slate-800 rounded-full overflow-hidden">
-        <div class="h-full bg-gradient-to-r from-indigo-500 to-purple-500" style="width: {{ b.pct }}%"></div>
+      
+      <!-- Actions -->
+      <div class="flex flex-wrap gap-2 shrink-0">
+        <a class="px-3 py-1.5 bg-slate-700 hover:bg-slate-600 text-slate-300 hover:text-white rounded-lg text-xs font-medium transition flex items-center gap-1" href="/packages/by-option?code={{ q.quota_code }}">
+          <span>📋</span> Detail
+        </a>
+        <form action="/packages/my/unsubscribe" method="post"
+              data-confirm="Paket <b>{{ q.name }}</b> akan dihentikan sebelum masa aktif habis. Sisa kuota akan hangus."
+              data-confirm-title="Unsubscribe paket?"
+              data-confirm-variant="danger"
+              data-confirm-ok="Unsubscribe">
+          <input type="hidden" name="quota_code" value="{{ q.quota_code }}">
+          <input type="hidden" name="product_domain" value="{{ q.product_domain }}">
+          <input type="hidden" name="product_subscription_type" value="{{ q.product_subscription_type }}">
+          <button class="px-3 py-1.5 bg-red-500/20 hover:bg-red-500/30 text-red-300 hover:text-red-200 border border-red-500/30 hover:border-red-500/50 rounded-lg text-xs font-medium transition flex items-center gap-1" type="submit">
+            <span>⏹</span> Stop
+          </button>
+        </form>
       </div>
-      {% endif %}
     </div>
-    {% endfor %}
-  </div>
-  {% endif %}
 
-  <details class="mt-3">
-    <summary class="text-xs cursor-pointer text-slate-500 hover:text-slate-300">Quota / family code</summary>
-    <div class="text-xs font-mono text-slate-500 mt-1 space-y-0.5">
-      <div>quota: {{ q.quota_code }}</div>
-      <div>group: {{ q.group_code }}</div>
+    <!-- Benefits -->
+    {% if q.benefits %}
+    <div class="mt-4 space-y-3">
+      {% for b in q.benefits %}
+      <div>
+        <div class="flex items-center justify-between text-sm mb-1">
+          <div class="font-medium text-white flex items-center gap-2">
+            <span>
+              {% if b.data_type == 'DATA' %}📊
+              {% elif b.data_type == 'VOICE' %}📞
+              {% elif b.data_type == 'TEXT' %}💬
+              {% else %}🎯{% endif %}
+            </span>
+            <span>{{ b.name }}</span>
+            {% if b.is_unlimited %}
+            <span class="text-[10px] px-1.5 py-0.5 bg-emerald-500/20 text-emerald-300 border border-emerald-500/30 rounded-full">∞ Unlimited</span>
+            {% endif %}
+          </div>
+          <div class="text-xs text-slate-400 font-mono">
+            {{ b.rem_disp }}{% if b.unit %} {{ b.unit }}{% endif %} / {{ b.tot_disp }}{% if b.unit %} {{ b.unit }}{% endif %}
+          </div>
+        </div>
+        {% if not b.is_unlimited and b.pct is defined %}
+        <div class="h-2 bg-slate-800 rounded-full overflow-hidden">
+          <div class="h-full rounded-full transition-all
+            {% if b.pct > 70 %}bg-emerald-400
+            {% elif b.pct > 40 %}bg-amber-400
+            {% else %}bg-red-400{% endif %}"
+            style="width: {{ b.pct }}%"></div>
+        </div>
+        {% endif %}
+      </div>
+      {% endfor %}
     </div>
-  </details>
+    {% endif %}
+
+    <!-- Raw codes (collapsible) -->
+    <details class="mt-3 pt-3 border-t border-slate-700/30">
+      <summary class="text-xs cursor-pointer text-slate-500 hover:text-slate-300 flex items-center gap-2">
+        <span class="text-lg">📄</span> Tampilkan kode
+      </summary>
+      <div class="text-xs font-mono text-slate-400 mt-2 space-y-1 bg-slate-900/50 p-2 rounded border border-slate-800/50">
+        <div>quota: <span class="text-indigo-300">{{ q.quota_code }}</span></div>
+        <div>group: <span class="text-indigo-300">{{ q.group_code }}</span></div>
+      </div>
+    </details>
+  </div>
+  {% endfor %}
 </div>
-{% endfor %}
-</div>
+
 {% endblock %}
