@@ -2,70 +2,235 @@
 {% block title %}Decoy Settings · me-cli{% endblock %}
 {% block content %}
 
-<div class="flex items-center justify-between mb-4">
-  <h1 class="text-2xl font-bold">⚙️ Pengaturan Decoy</h1>
-  <a href="/settings/decoy" class="text-xs text-slate-400 hover:text-slate-200">↻ Refresh</a>
+<!-- Header -->
+<div class="flex flex-col sm:flex-row sm:items-center justify-between mb-6">
+  <div>
+    <h1 class="text-2xl font-bold text-white flex items-center gap-2">
+      <span>⚙️</span> Pengaturan Decoy
+    </h1>
+    <p class="text-sm text-slate-400 mt-1">Kelola paket dummy untuk transaksi yang lebih wajar.</p>
+  </div>
+  <a href="/settings/decoy" class="inline-flex items-center gap-1 text-xs text-slate-400 hover:text-white transition px-3 py-1.5 bg-slate-800/50 rounded-lg border border-slate-700/50 mt-2 sm:mt-0">
+    <span>↻</span> Refresh
+  </a>
 </div>
 
-{% if msg %}<div class="alert-success">✅ {{ msg }}</div>{% endif %}
+<!-- Notifikasi -->
+{% if msg %}
+<div class="mb-6 p-3 rounded-xl bg-emerald-500/10 border border-emerald-500/30 text-emerald-300 flex items-center gap-2">
+  <span class="text-lg">✅</span>
+  <span>{{ msg }}</span>
+</div>
+{% endif %}
 
-<div class="card mb-6 bg-indigo-500/10 border-indigo-500/30">
-  <div class="text-sm text-indigo-200 leading-relaxed">
-    <p class="font-medium mb-2">📖 Apa itu Decoy?</p>
-    <p class="text-slate-300">Decoy = paket dummy yang ditambahin bareng paket utama waktu beli biar transaksi keliatan "wajar". <b>Default</b> dipakai akun <span class="font-mono">PREPAID</span> biasa, <b>Prio</b> dipakai akun <span class="font-mono">PRIORITAS / PRIOHYBRID / GO</span>. Auto-pilih sesuai akun aktif lo.</p>
-    <p class="text-amber-200 mt-2"><b>⚠️ Penting:</b> family_code & variant_code yang dikasih sample bisa expired. Tekan tombol <b>🧪 Test</b> di tiap decoy buat verifikasi apakah masih valid sebelum dipakai.</p>
+<!-- Penjelasan Decoy -->
+<div class="bg-indigo-500/10 border border-indigo-500/30 rounded-xl p-5 mb-6">
+  <div class="flex items-start gap-3">
+    <span class="text-2xl">📖</span>
+    <div class="text-sm leading-relaxed">
+      <p class="font-medium text-indigo-200 mb-1">Apa itu Decoy?</p>
+      <p class="text-slate-300">Decoy = paket dummy yang ditambahkan bersama paket utama saat transaksi agar terlihat "wajar".</p>
+      <ul class="mt-2 space-y-1 text-slate-300">
+        <li>• <b>Default</b> → digunakan untuk akun <span class="font-mono text-indigo-300">PREPAID</span> biasa</li>
+        <li>• <b>Prio</b> → digunakan untuk akun <span class="font-mono text-indigo-300">PRIORITAS / PRIOHYBRID / GO</span></li>
+        <li>• Sistem akan otomatis memilih sesuai akun yang aktif</li>
+      </ul>
+      <div class="mt-2 p-2 bg-amber-500/10 rounded-lg border border-amber-500/30 text-amber-200">
+        <span class="font-medium">⚠️ Penting:</span> family_code &amp; variant_code bisa expired. Gunakan tombol <b class="text-amber-300">🧪 Test</b> untuk memverifikasi validitas sebelum digunakan.
+      </div>
+    </div>
   </div>
 </div>
 
-{# Macro for the form-based decoy fields #}
+<!-- ====== BUILT-IN DECOYS ====== -->
+<section class="mb-8">
+  <div class="flex items-center gap-2 mb-4">
+    <span class="text-lg">📦</span>
+    <h2 class="text-sm uppercase tracking-wider text-slate-400 font-medium">Decoy Bawaan</h2>
+    <span class="flex-1 border-t border-slate-700/50"></span>
+  </div>
+
+  <div class="grid grid-cols-1 lg:grid-cols-2 gap-4">
+    {% for b in builtins %}
+    <details class="group bg-slate-800/50 border border-slate-700/50 hover:border-indigo-500/40 rounded-xl overflow-hidden transition">
+      <summary class="cursor-pointer flex items-start justify-between gap-3 p-4 list-none hover:bg-slate-800/80 transition">
+        <div class="min-w-0 flex-1">
+          <div class="font-medium text-white">{{ b.label }}</div>
+          <div class="text-xs text-slate-400">{{ b.subtype }}</div>
+          <div class="mt-2 text-xs text-slate-400 truncate flex flex-wrap gap-2">
+            {% if b.data.family_code %}
+            <span class="font-mono text-slate-300 bg-slate-900/50 px-1.5 py-0.5 rounded">{{ b.data.family_code[:8] }}…</span>
+            <span class="text-slate-500">order {{ b.data.order }}</span>
+            <span class="text-emerald-300">Rp {{ b.data.price | int }}</span>
+            {% else %}
+            <span class="text-red-400">⚠️ Kosong / belum di-set</span>
+            {% endif %}
+          </div>
+        </div>
+        <div class="text-xs text-indigo-300 group-hover:text-indigo-200 transition shrink-0 flex items-center gap-1">
+          <span>Edit</span>
+          <span class="text-lg">›</span>
+        </div>
+      </summary>
+      <div class="p-4 pt-0 border-t border-slate-700/50">
+        {{ decoy_editor(b.data, 'builtin', b.key, include_base_method=False, label=b.label) }}
+      </div>
+    </details>
+    {% endfor %}
+  </div>
+</section>
+
+<!-- ====== CUSTOM DECOYS ====== -->
+<section class="mb-8">
+  <div class="flex items-center justify-between mb-4">
+    <div class="flex items-center gap-2">
+      <span class="text-lg">⭐</span>
+      <h2 class="text-sm uppercase tracking-wider text-slate-400 font-medium">Decoy Custom</h2>
+    </div>
+    <span class="text-xs text-slate-500 bg-slate-800/50 px-2 py-0.5 rounded-full border border-slate-700/50">
+      {{ customs | length }} tersimpan
+    </span>
+  </div>
+
+  <div class="grid grid-cols-1 lg:grid-cols-2 gap-4">
+    {% for c in customs %}
+    <details class="group bg-slate-800/50 border border-fuchsia-500/30 hover:border-fuchsia-500/50 rounded-xl overflow-hidden transition">
+      <summary class="cursor-pointer flex items-start justify-between gap-3 p-4 list-none hover:bg-slate-800/80 transition">
+        <div class="min-w-0 flex-1">
+          <div class="font-medium text-white flex items-center gap-2 flex-wrap">
+            <span class="text-fuchsia-300">⭐ {{ c.name }}</span>
+            <span class="text-xs px-2 py-0.5 rounded-full 
+              {% if c.base_method == 'qris' %}
+                bg-emerald-500/15 text-emerald-300 border border-emerald-500/30
+              {% else %}
+                bg-amber-500/15 text-amber-300 border border-amber-500/30
+              {% endif %}">
+              {{ c.base_method }}
+            </span>
+          </div>
+          <div class="mt-2 text-xs text-slate-400 truncate flex flex-wrap gap-2">
+            {% if c.data.family_code %}
+            <span class="font-mono text-slate-300 bg-slate-900/50 px-1.5 py-0.5 rounded">{{ c.data.family_code[:8] }}…</span>
+            <span class="text-slate-500">order {{ c.data.order }}</span>
+            <span class="text-emerald-300">Rp {{ c.data.price | int }}</span>
+            {% else %}
+            <span class="text-red-400">⚠️ Kosong</span>
+            {% endif %}
+          </div>
+        </div>
+        <div class="text-xs text-indigo-300 group-hover:text-indigo-200 transition shrink-0 flex items-center gap-1">
+          <span>Edit</span>
+          <span class="text-lg">›</span>
+        </div>
+      </summary>
+      <div class="p-4 pt-0 border-t border-slate-700/50">
+        {{ decoy_editor(c.data, 'custom', c.name, include_base_method=True, label='Custom ' + c.name) }}
+        <form action="/settings/decoy/custom/{{ c.name }}/delete" method="post" class="mt-4"
+              data-confirm="Custom decoy <b>{{ c.name }}</b> akan dihapus permanen."
+              data-confirm-title="Hapus custom decoy?"
+              data-confirm-variant="danger"
+              data-confirm-ok="Hapus">
+          <button class="w-full px-4 py-2 bg-red-500/20 hover:bg-red-500/30 text-red-300 hover:text-red-200 border border-red-500/30 hover:border-red-500/50 rounded-lg text-sm font-medium transition flex items-center justify-center gap-2" type="submit">
+            <span>🗑️</span> Hapus Custom
+          </button>
+        </form>
+      </div>
+    </details>
+    {% endfor %}
+  </div>
+</section>
+
+<!-- ====== TAMBAH CUSTOM BARU ====== -->
+<section class="mb-6">
+  <details class="bg-slate-800/50 border border-emerald-500/40 rounded-xl overflow-hidden hover:border-emerald-500/60 transition">
+    <summary class="cursor-pointer p-4 text-emerald-300 hover:text-emerald-200 font-medium flex items-center gap-2 list-none">
+      <span class="text-lg">➕</span>
+      <span>Tambah Custom Decoy Baru</span>
+    </summary>
+    <div class="p-4 pt-0 border-t border-slate-700/50">
+      <form action="/settings/decoy/custom/add" method="post" class="mt-4 space-y-4">
+        <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
+          <div>
+            <label class="block text-xs text-slate-400 mb-1">Nama Custom <span class="text-red-400">*</span></label>
+            <input class="w-full bg-slate-800 border border-slate-700 rounded-lg px-3 py-2 text-sm focus:border-indigo-500 focus:outline-none" 
+                   name="name" pattern="[a-z0-9][a-z0-9_-]{0,30}" placeholder="v1 / vtest / my-decoy" required>
+            <p class="text-xs text-slate-500 mt-1">Huruf kecil, angka, _, -</p>
+          </div>
+        </div>
+        {{ decoy_fields({'order': 1, 'migration_type': 'NONE', 'base_method': 'balance'}, include_base_method=True) }}
+        <button class="w-full px-4 py-2.5 bg-indigo-600 hover:bg-indigo-500 text-white font-medium rounded-xl transition shadow-lg shadow-indigo-900/30 flex items-center justify-center gap-2" type="submit">
+          <span>➕</span> Tambah Custom Decoy
+        </button>
+      </form>
+    </div>
+  </details>
+</section>
+
+<!-- Footer info -->
+<div class="mt-6 text-center text-xs text-slate-500 bg-slate-800/30 border border-slate-700/30 rounded-lg p-3">
+  💡 Decoy custom akan muncul di halaman detail paket sebagai opsi 
+  <span class="text-slate-300">"Pulsa + Decoy ({nama})"</span> atau 
+  <span class="text-slate-300">"QRIS + Decoy ({nama})"</span>.
+</div>
+
+<!-- ====== MACROS (ditempatkan di bawah agar bersih) ====== -->
 {% macro decoy_fields(d, include_base_method=False) %}
-<div class="grid grid-cols-1 sm:grid-cols-2 gap-3 text-sm">
+<div class="grid grid-cols-1 sm:grid-cols-2 gap-4 text-sm">
   <div class="sm:col-span-2">
-    <label class="label">Family Name (label)</label>
-    <input class="form-input" name="family_name" value="{{ d.family_name or '' }}" placeholder="XL PASS">
-  </div>
-  <div class="sm:col-span-2">
-    <label class="label">Family Code (UUID)</label>
-    <input class="form-input font-mono" name="family_code" value="{{ d.family_code or '' }}" placeholder="xxxxxxxx-xxxx-..." required>
+    <label class="block text-xs text-slate-400 mb-1">Family Name (label)</label>
+    <input class="w-full bg-slate-800 border border-slate-700 rounded-lg px-3 py-2 text-sm focus:border-indigo-500 focus:outline-none" 
+           name="family_name" value="{{ d.family_name or '' }}" placeholder="XL PASS">
   </div>
   <div class="sm:col-span-2">
-    <label class="label">Variant Code (UUID)</label>
-    <input class="form-input font-mono" name="variant_code" value="{{ d.variant_code or '' }}" placeholder="xxxxxxxx-xxxx-..." required>
+    <label class="block text-xs text-slate-400 mb-1">Family Code (UUID) <span class="text-red-400">*</span></label>
+    <input class="w-full bg-slate-800 border border-slate-700 rounded-lg px-3 py-2 text-sm font-mono focus:border-indigo-500 focus:outline-none" 
+           name="family_code" value="{{ d.family_code or '' }}" placeholder="xxxxxxxx-xxxx-..." required>
+  </div>
+  <div class="sm:col-span-2">
+    <label class="block text-xs text-slate-400 mb-1">Variant Code (UUID) <span class="text-red-400">*</span></label>
+    <input class="w-full bg-slate-800 border border-slate-700 rounded-lg px-3 py-2 text-sm font-mono focus:border-indigo-500 focus:outline-none" 
+           name="variant_code" value="{{ d.variant_code or '' }}" placeholder="xxxxxxxx-xxxx-..." required>
   </div>
   <div>
-    <label class="label">Variant Name</label>
-    <input class="form-input" name="variant_name" value="{{ d.variant_name or '' }}">
+    <label class="block text-xs text-slate-400 mb-1">Variant Name</label>
+    <input class="w-full bg-slate-800 border border-slate-700 rounded-lg px-3 py-2 text-sm focus:border-indigo-500 focus:outline-none" 
+           name="variant_name" value="{{ d.variant_name or '' }}">
   </div>
   <div>
-    <label class="label">Option Name</label>
-    <input class="form-input" name="option_name" value="{{ d.option_name or '' }}">
+    <label class="block text-xs text-slate-400 mb-1">Option Name</label>
+    <input class="w-full bg-slate-800 border border-slate-700 rounded-lg px-3 py-2 text-sm focus:border-indigo-500 focus:outline-none" 
+           name="option_name" value="{{ d.option_name or '' }}">
   </div>
   <div>
-    <label class="label">Order #</label>
-    <input class="form-input" type="number" name="order" value="{{ d.order or 1 }}" min="1" required>
+    <label class="block text-xs text-slate-400 mb-1">Order # <span class="text-red-400">*</span></label>
+    <input class="w-full bg-slate-800 border border-slate-700 rounded-lg px-3 py-2 text-sm focus:border-indigo-500 focus:outline-none" 
+           type="number" name="order" value="{{ d.order or 1 }}" min="1" required>
   </div>
   <div>
-    <label class="label">Price (Rp)</label>
-    <input class="form-input" type="number" name="price" value="{{ d.price or 0 }}" min="0" required>
+    <label class="block text-xs text-slate-400 mb-1">Price (Rp) <span class="text-red-400">*</span></label>
+    <input class="w-full bg-slate-800 border border-slate-700 rounded-lg px-3 py-2 text-sm focus:border-indigo-500 focus:outline-none" 
+           type="number" name="price" value="{{ d.price or 0 }}" min="0" required>
   </div>
   <div>
-    <label class="label">Migration Type</label>
-    <select class="form-input" name="migration_type">
+    <label class="block text-xs text-slate-400 mb-1">Migration Type</label>
+    <select class="w-full bg-slate-800 border border-slate-700 rounded-lg px-3 py-2 text-sm focus:border-indigo-500 focus:outline-none" 
+            name="migration_type">
       {% for opt in ['NONE','PRE_TO_PRIOH','PRIOH_TO_PRIO','PRIO_TO_PRIOH'] %}
         <option value="{{ opt }}" {% if (d.migration_type or 'NONE') == opt %}selected{% endif %}>{{ opt }}</option>
       {% endfor %}
     </select>
   </div>
-  <div class="flex items-end">
-    <label class="flex items-center gap-2 text-sm text-slate-300">
-      <input type="checkbox" name="is_enterprise" value="true" {% if d.is_enterprise %}checked{% endif %}>
+  <div class="flex items-center">
+    <label class="flex items-center gap-2 text-sm text-slate-300 cursor-pointer">
+      <input type="checkbox" name="is_enterprise" value="true" {% if d.is_enterprise %}checked{% endif %} class="accent-indigo-500">
       Enterprise
     </label>
   </div>
   {% if include_base_method %}
   <div class="sm:col-span-2">
-    <label class="label">Base Method (decoy dipasangkan dengan…)</label>
-    <select class="form-input" name="base_method">
+    <label class="block text-xs text-slate-400 mb-1">Base Method <span class="text-red-400">*</span></label>
+    <select class="w-full bg-slate-800 border border-slate-700 rounded-lg px-3 py-2 text-sm focus:border-indigo-500 focus:outline-none" 
+            name="base_method">
       <option value="balance" {% if d.base_method == 'balance' %}selected{% endif %}>Balance / Pulsa</option>
       <option value="qris" {% if d.base_method == 'qris' %}selected{% endif %}>QRIS</option>
     </select>
@@ -74,20 +239,23 @@
 </div>
 {% endmacro %}
 
-{# Macro for the editor (Form OR JSON tabs + Test button) #}
 {% macro decoy_editor(d, kind, key, include_base_method=False, label='') %}
 {% set tab_id = 'tab-' ~ kind ~ '-' ~ key %}
-<div class="mt-4">
-  <div class="flex items-center gap-1 border-b border-slate-800 mb-3" role="tablist">
-    <button type="button" data-tab="form" data-target="{{ tab_id }}" class="tab-btn px-3 py-1.5 text-xs rounded-t border-b-2 border-indigo-500 text-indigo-300 -mb-px">📝 Form</button>
-    <button type="button" data-tab="json" data-target="{{ tab_id }}" class="tab-btn px-3 py-1.5 text-xs rounded-t border-b-2 border-transparent text-slate-400 hover:text-slate-200 -mb-px">{}  JSON</button>
+<div class="mt-2">
+  <div class="flex items-center gap-2 border-b border-slate-700/70 mb-3" role="tablist">
+    <button type="button" data-tab="form" data-target="{{ tab_id }}" class="tab-btn px-3 py-1.5 text-xs font-medium rounded-t border-b-2 border-indigo-500 text-indigo-300 -mb-px transition">📝 Form</button>
+    <button type="button" data-tab="json" data-target="{{ tab_id }}" class="tab-btn px-3 py-1.5 text-xs font-medium rounded-t border-b-2 border-transparent text-slate-400 hover:text-slate-200 -mb-px transition">{} JSON</button>
     <div class="ml-auto">
-      <button type="button" data-test="{{ kind }}/{{ key }}" data-test-target="test-{{ kind }}-{{ key }}" class="text-xs px-3 py-1.5 rounded bg-amber-500/15 text-amber-300 border border-amber-500/30 hover:bg-amber-500/25" data-no-loader>🧪 Test Fetch</button>
+      <button type="button" data-test="{{ kind }}/{{ key }}" data-test-target="test-{{ kind }}-{{ key }}" 
+              class="text-xs px-3 py-1.5 rounded bg-amber-500/15 text-amber-300 border border-amber-500/30 hover:bg-amber-500/25 transition flex items-center gap-1" data-no-loader>
+        <span>🧪</span> Test
+      </button>
     </div>
   </div>
+
   <div id="test-{{ kind }}-{{ key }}" class="mb-3 hidden text-xs"></div>
 
-  {# FORM mode #}
+  <!-- FORM mode -->
   <div data-pane="form" data-pane-of="{{ tab_id }}">
     <form action="/settings/decoy/{% if kind == 'builtin' %}builtin{% else %}custom{% endif %}/{{ key }}" method="post"
           data-confirm="Simpan perubahan untuk {{ label or key }}?"
@@ -95,164 +263,84 @@
           data-confirm-variant="primary"
           data-confirm-ok="Simpan">
       {{ decoy_fields(d, include_base_method=include_base_method) }}
-      <button class="btn btn-primary w-full mt-4" type="submit">💾 Simpan (Form)</button>
+      <button class="w-full px-4 py-2.5 bg-indigo-600 hover:bg-indigo-500 text-white font-medium rounded-xl transition shadow-lg shadow-indigo-900/30 mt-4 flex items-center justify-center gap-2" type="submit">
+        <span>💾</span> Simpan (Form)
+      </button>
     </form>
   </div>
 
-  {# JSON mode #}
+  <!-- JSON mode -->
   <div data-pane="json" data-pane-of="{{ tab_id }}" class="hidden">
     <form action="/settings/decoy/raw/{{ kind }}/{{ key }}" method="post"
-          data-confirm="Replace seluruh isi file dengan JSON di textarea? Pastikan format-nya benar."
-          data-confirm-title="Save raw JSON?"
+          data-confirm="Replace seluruh isi file dengan JSON di textarea? Pastikan formatnya benar."
+          data-confirm-title="Simpan raw JSON?"
           data-confirm-variant="warning"
-          data-confirm-ok="Save JSON">
-      <label class="label">Raw JSON</label>
-      <textarea name="raw_json" rows="14" class="form-input font-mono text-xs leading-snug" spellcheck="false" required>{{ d | tojson(indent=4) }}</textarea>
+          data-confirm-ok="Simpan JSON">
+      <label class="block text-xs text-slate-400 mb-1">Raw JSON</label>
+      <textarea name="raw_json" rows="12" class="w-full bg-slate-900 border border-slate-700 rounded-lg px-3 py-2 text-xs font-mono leading-snug focus:border-indigo-500 focus:outline-none" spellcheck="false" required>{{ d | tojson(indent=4) }}</textarea>
       <p class="text-xs text-slate-500 mt-1">Field minimal: family_code, variant_code, order, price{% if include_base_method %}, base_method (balance/qris){% endif %}.</p>
-      <button class="btn btn-primary w-full mt-3" type="submit">💾 Simpan (JSON)</button>
+      <button class="w-full px-4 py-2.5 bg-indigo-600 hover:bg-indigo-500 text-white font-medium rounded-xl transition shadow-lg shadow-indigo-900/30 mt-3 flex items-center justify-center gap-2" type="submit">
+        <span>💾</span> Simpan (JSON)
+      </button>
     </form>
   </div>
 </div>
 {% endmacro %}
 
-<!-- BUILT-IN DECOYS -->
-<h2 class="text-sm uppercase tracking-wider text-slate-400 mb-3">Decoy Bawaan</h2>
-<div class="grid grid-cols-1 lg:grid-cols-2 gap-3 mb-6">
-{% for b in builtins %}
-<details class="card">
-  <summary class="cursor-pointer flex items-start justify-between gap-3 list-none">
-    <div class="min-w-0">
-      <div class="font-bold text-sm">{{ b.label }}</div>
-      <div class="text-xs text-slate-500 mt-0.5">{{ b.subtype }}</div>
-      <div class="mt-2 text-xs text-slate-400 truncate">
-        {% if b.data.family_code %}
-        <span class="font-mono">{{ b.data.family_code[:8] }}…</span>
-        · order {{ b.data.order }}
-        · Rp {{ b.data.price | int }}
-        {% else %}
-        <span class="text-red-400">⚠ kosong / belum di-set</span>
-        {% endif %}
-      </div>
-    </div>
-    <div class="text-xs text-indigo-300 shrink-0">Edit ›</div>
-  </summary>
-  {{ decoy_editor(b.data, 'builtin', b.key, include_base_method=False, label=b.label) }}
-</details>
-{% endfor %}
-</div>
-
-<!-- CUSTOM DECOYS -->
-<div class="flex items-center justify-between mb-3">
-  <h2 class="text-sm uppercase tracking-wider text-slate-400">Decoy Custom</h2>
-  <span class="text-xs text-slate-600">{{ customs | length }} tersimpan</span>
-</div>
-
-<div class="grid grid-cols-1 lg:grid-cols-2 gap-3 mb-6">
-{% for c in customs %}
-<details class="card border-fuchsia-500/30">
-  <summary class="cursor-pointer flex items-start justify-between gap-3 list-none">
-    <div class="min-w-0">
-      <div class="font-bold text-sm flex items-center gap-2">
-        <span class="text-fuchsia-300">⭐ {{ c.name }}</span>
-        <span class="text-xs px-1.5 py-0.5 rounded {% if c.base_method == 'qris' %}bg-emerald-500/15 text-emerald-300{% else %}bg-amber-500/15 text-amber-300{% endif %}">
-          {{ c.base_method }}
-        </span>
-      </div>
-      <div class="mt-2 text-xs text-slate-400 truncate">
-        {% if c.data.family_code %}
-        <span class="font-mono">{{ c.data.family_code[:8] }}…</span>
-        · order {{ c.data.order }}
-        · Rp {{ c.data.price | int }}
-        {% else %}
-        <span class="text-red-400">⚠ kosong</span>
-        {% endif %}
-      </div>
-    </div>
-    <div class="text-xs text-indigo-300 shrink-0">Edit ›</div>
-  </summary>
-  {{ decoy_editor(c.data, 'custom', c.name, include_base_method=True, label='Custom ' ~ c.name) }}
-  <form action="/settings/decoy/custom/{{ c.name }}/delete" method="post" class="mt-3"
-        data-confirm="Custom decoy <b>{{ c.name }}</b> bakal dihapus permanen."
-        data-confirm-title="Hapus custom decoy?"
-        data-confirm-variant="danger"
-        data-confirm-ok="Hapus">
-    <button class="btn btn-danger w-full text-xs" type="submit">🗑️ Hapus Custom</button>
-  </form>
-</details>
-{% endfor %}
-</div>
-
-<!-- ADD NEW CUSTOM -->
-<details class="card border-dashed border-emerald-500/40">
-  <summary class="cursor-pointer text-sm font-medium text-emerald-300 hover:text-emerald-200">+ Tambah Custom Decoy Baru</summary>
-  <form action="/settings/decoy/custom/add" method="post" class="mt-4">
-    <div class="grid grid-cols-1 sm:grid-cols-2 gap-3 text-sm mb-3">
-      <div class="sm:col-span-2">
-        <label class="label">Nama Custom (huruf kecil, angka, _, -)</label>
-        <input class="form-input" name="name" pattern="[a-z0-9][a-z0-9_-]{0,30}" placeholder="v1, vtest, my-decoy" required>
-        <p class="text-xs text-slate-500 mt-1">Bakal disimpan sebagai <span class="font-mono">decoy_data/custom-{nama}.json</span></p>
-      </div>
-    </div>
-    {{ decoy_fields({'order': 1, 'migration_type': 'NONE', 'base_method': 'balance'}, include_base_method=True) }}
-    <button class="btn btn-primary w-full mt-4" type="submit">+ Tambah Custom Decoy</button>
-  </form>
-</details>
-
-<div class="mt-6 text-center text-xs text-slate-500">
-  💡 Decoy custom otomatis muncul di halaman detail paket sebagai opsi <b>"Pulsa + Decoy ({nama})"</b> atau <b>"QRIS + Decoy ({nama})"</b>.
-</div>
-
 <script>
 (function(){
-  // Tab toggle within each editor
+  // Tab switching
   document.querySelectorAll('.tab-btn').forEach(btn => {
     btn.addEventListener('click', () => {
-      const id = btn.dataset.target, tab = btn.dataset.tab;
-      btn.parentElement.querySelectorAll('.tab-btn').forEach(b => {
+      const id = btn.dataset.target;
+      const tab = btn.dataset.tab;
+      const parent = btn.closest('details') || document;
+      // Update tab button styles
+      parent.querySelectorAll('.tab-btn').forEach(b => {
         const active = b === btn;
         b.classList.toggle('border-indigo-500', active);
         b.classList.toggle('text-indigo-300', active);
         b.classList.toggle('border-transparent', !active);
         b.classList.toggle('text-slate-400', !active);
       });
-      const container = btn.closest('details') || document;
-      container.querySelectorAll(`[data-pane-of="${id}"]`).forEach(pane => {
+      // Show corresponding pane
+      parent.querySelectorAll(`[data-pane-of="${id}"]`).forEach(pane => {
         pane.classList.toggle('hidden', pane.dataset.pane !== tab);
       });
     });
   });
 
-  // Test fetch button — AJAX
+  // Test fetch
   document.querySelectorAll('[data-test]').forEach(btn => {
     btn.addEventListener('click', async () => {
       const path = btn.dataset.test;
       const target = document.getElementById(btn.dataset.testTarget);
       target.classList.remove('hidden');
-      target.innerHTML = '<div class="text-slate-400">⏳ Testing…</div>';
+      target.innerHTML = '<div class="text-slate-400 flex items-center gap-2"><span class="animate-pulse">⏳</span> Testing…</div>';
       btn.disabled = true;
       try {
         const r = await fetch(`/settings/decoy/test/${path}`, {method: 'POST'});
         const d = await r.json();
         if (d.ok) {
           target.innerHTML = `
-            <div class="bg-emerald-500/10 border border-emerald-500/30 rounded p-2 text-emerald-200">
-              <div class="font-bold">✅ Fetch berhasil</div>
+            <div class="bg-emerald-500/10 border border-emerald-500/30 rounded-lg p-3 text-emerald-200">
+              <div class="font-bold flex items-center gap-2"><span>✅</span> Fetch berhasil</div>
               <div class="mt-1 text-xs text-emerald-100/80 space-y-0.5">
-                <div>option: <span class="font-mono">${escape(d.option_code)}</span></div>
-                <div>name: ${escape(d.option_name || '-')}</div>
-                <div>price: Rp ${(d.price || 0).toLocaleString('id-ID')}</div>
-                <div>validity: ${escape(d.validity || '-')}</div>
+                <div>Option: <span class="font-mono">${escape(d.option_code)}</span></div>
+                <div>Name: ${escape(d.option_name || '-')}</div>
+                <div>Price: Rp ${(d.price || 0).toLocaleString('id-ID')}</div>
+                <div>Validity: ${escape(d.validity || '-')}</div>
               </div>
             </div>`;
         } else {
           target.innerHTML = `
-            <div class="bg-red-500/10 border border-red-500/30 rounded p-2 text-red-200">
-              <div class="font-bold">❌ Fetch gagal</div>
+            <div class="bg-red-500/10 border border-red-500/30 rounded-lg p-3 text-red-200">
+              <div class="font-bold flex items-center gap-2"><span>❌</span> Fetch gagal</div>
               <div class="mt-1 text-xs text-red-100/80">${escape(d.error || 'unknown')}</div>
             </div>`;
         }
       } catch (e) {
-        target.innerHTML = `<div class="bg-red-500/10 border border-red-500/30 rounded p-2 text-red-200">❌ Network: ${escape(String(e))}</div>`;
+        target.innerHTML = `<div class="bg-red-500/10 border border-red-500/30 rounded-lg p-3 text-red-200">❌ Network: ${escape(String(e))}</div>`;
       } finally {
         btn.disabled = false;
       }
