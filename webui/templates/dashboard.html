@@ -2,178 +2,139 @@
 {% block title %}Beranda · me-cli{% endblock %}
 {% block content %}
 
-<!-- ====== 1. KARTU PROFIL (GRADIENT + GLASSMORPHISM) ====== -->
-<div class="relative overflow-hidden rounded-2xl bg-gradient-to-br from-indigo-600 via-purple-600 to-fuchsia-600 p-6 shadow-xl mb-6 border border-white/10">
-  <!-- efek glow latar belakang -->
-  <div class="absolute -top-16 -right-16 w-56 h-56 bg-white/10 rounded-full blur-3xl"></div>
+<!-- ====== HEADER (INFO NOMOR AKTIF) ====== -->
+<div class="flex items-center justify-between mb-4">
+  <div class="text-xs text-slate-400 uppercase tracking-wider font-semibold">NOMOR AKTIF</div>
+  <a href="/accounts" class="text-xs px-3 py-1.5 rounded-lg bg-slate-800/50 text-slate-300 hover:text-white border border-slate-600/50 transition">
+    Ganti Akun
+  </a>
+</div>
+
+<!-- ====== KARTU PROFIL (Model MyEngsel) ====== -->
+<div class="bg-slate-900/80 border border-slate-700/50 rounded-2xl p-5 shadow-lg mb-6">
   
-  <div class="relative z-10 flex flex-col sm:flex-row sm:items-start sm:justify-between">
+  <!-- Nomor dan Tipe -->
+  <div class="flex items-center justify-between">
     <div>
-      <div class="flex items-center gap-2 text-xs text-indigo-200 uppercase tracking-wider">
-        <span>📱</span> Nomor Aktif
-      </div>
-      <div class="text-2xl sm:text-3xl font-bold text-white font-mono tracking-wide mt-1">
+      <div class="text-2xl font-mono text-white flex items-center gap-3">
+        <i class="fa-solid fa-eye-slash text-slate-400 text-sm"></i>
         {{ active_user.number }}
       </div>
-      <div class="flex flex-wrap gap-2 mt-1">
-        <span class="bg-white/15 px-3 py-0.5 rounded-full text-xs text-white border border-white/10">
+      <div class="mt-1">
+        <span class="text-[10px] px-2 py-0.5 rounded-full bg-slate-700 text-slate-300 border border-slate-600/50 uppercase">
           {{ active_user.subscription_type }}
         </span>
         {% if tier_info and tier_info.tier %}
-        <span class="bg-white/15 px-3 py-0.5 rounded-full text-xs text-white border border-white/10">
-          ⭐ Tier {{ tier_info.tier }}
+        <span class="text-[10px] px-2 py-0.5 rounded-full bg-indigo-500/20 text-indigo-300 border border-indigo-500/30 ml-1">
+          Tier {{ tier_info.tier }}
         </span>
         {% endif %}
       </div>
     </div>
-    <div class="mt-4 sm:mt-0">
-      <a href="/accounts" class="text-xs text-indigo-200/70 hover:text-white transition">Ganti akun ↗</a>
-    </div>
   </div>
 
-  <div class="grid grid-cols-3 gap-4 mt-6 relative z-10">
-    <div class="bg-white/10 backdrop-blur-sm rounded-xl p-3 border border-white/10">
-      <div class="text-[10px] uppercase tracking-wider text-indigo-200">Pulsa</div>
-      <div class="text-lg sm:text-xl font-semibold text-white truncate">
+  <!-- Divider -->
+  <div class="h-px bg-slate-700/50 my-4"></div>
+
+  <!-- Info: Pulsa, Aktif s/d, Poin -->
+  <div class="grid grid-cols-3 gap-4">
+    <div>
+      <div class="text-[10px] uppercase tracking-wider text-slate-400">Pulsa</div>
+      <div class="text-lg font-bold text-white">
         {% if balance and balance.remaining is not none %}{{ balance.remaining | rp }}{% else %}—{% endif %}
       </div>
     </div>
-    <div class="bg-white/10 backdrop-blur-sm rounded-xl p-3 border border-white/10">
-      <div class="text-[10px] uppercase tracking-wider text-indigo-200">Aktif s/d</div>
-      <div class="text-lg sm:text-xl font-semibold text-white">
+    <div>
+      <div class="text-[10px] uppercase tracking-wider text-slate-400">Aktif s/d</div>
+      <div class="text-lg font-bold text-white">
         {% if balance and balance.expired_at %}{{ balance.expired_at | date }}{% else %}—{% endif %}
       </div>
     </div>
-    <div class="bg-white/10 backdrop-blur-sm rounded-xl p-3 border border-white/10">
-      <div class="text-[10px] uppercase tracking-wider text-indigo-200">Poin</div>
-      <div class="text-lg sm:text-xl font-semibold text-white">{{ tier_info.current_point or 0 }}</div>
+    <div>
+      <div class="text-[10px] uppercase tracking-wider text-slate-400">Points</div>
+      <div class="text-lg font-bold text-white">{{ tier_info.current_point or 0 }}</div>
     </div>
   </div>
 
   {% if balance_err %}
-  <div class="mt-4 text-xs bg-red-500/30 border border-red-400/40 text-red-100 px-3 py-2 rounded-lg backdrop-blur-sm">
-    ⚠️ {{ balance_err }}
+  <div class="mt-3 text-xs text-red-400 bg-red-500/10 border border-red-500/30 rounded-lg px-3 py-2">
+    <i class="fa-solid fa-circle-exclamation mr-1"></i> {{ balance_err }}
   </div>
   {% endif %}
 </div>
 
-<!-- ====== 2. AKSI CEPAT (GRID 4 BESAR) ====== -->
-<div class="grid grid-cols-2 lg:grid-cols-4 gap-4 mb-8">
-  <a href="/packages/my" class="group bg-slate-800/50 hover:bg-slate-700 border border-slate-700/50 hover:border-emerald-500/40 rounded-xl p-4 transition-all">
-    <div class="text-2xl mb-1">📦</div>
-    <div class="font-semibold text-white group-hover:text-emerald-300 transition">Paket Saya</div>
-    <div class="text-xs text-slate-400">
-      <span class="text-emerald-400 font-bold">{{ active_packages_count }}</span> aktif
-    </div>
+<!-- ====== 4 KOTAK SHORTCUT (MyEngsel style) ====== -->
+<div class="grid grid-cols-4 gap-3 mb-6">
+  <a href="/packages/my" class="flex flex-col items-center justify-center p-3 rounded-2xl bg-slate-800/50 border border-slate-700/50 hover:bg-slate-700/60 hover:border-indigo-500/40 transition h-24">
+    <div class="text-2xl text-indigo-300 mb-1"><i class="fa-solid fa-cube"></i></div>
+    <div class="text-xs font-medium text-slate-200">{{ active_packages_count }} Paket</div>
   </a>
-  
-  <a href="/transactions" class="group bg-slate-800/50 hover:bg-slate-700 border border-slate-700/50 hover:border-amber-500/40 rounded-xl p-4 transition-all">
-    <div class="text-2xl mb-1">🧾</div>
-    <div class="font-semibold text-white group-hover:text-amber-300 transition">Histori</div>
-    <div class="text-xs text-slate-400">Riwayat transaksi</div>
+  <a href="/transactions" class="flex flex-col items-center justify-center p-3 rounded-2xl bg-slate-800/50 border border-slate-700/50 hover:bg-slate-700/60 hover:border-indigo-500/40 transition h-24">
+    <div class="text-2xl text-indigo-300 mb-1"><i class="fa-solid fa-file-lines"></i></div>
+    <div class="text-xs font-medium text-slate-200">Riwayat</div>
   </a>
-
-  <a href="/bookmark" class="group bg-slate-800/50 hover:bg-slate-700 border border-slate-700/50 hover:border-sky-500/40 rounded-xl p-4 transition-all">
-    <div class="text-2xl mb-1">🔖</div>
-    <div class="font-semibold text-white group-hover:text-sky-300 transition">Bookmark</div>
-    <div class="text-xs text-slate-400">Paket favorit</div>
+  <a href="/bookmark" class="flex flex-col items-center justify-center p-3 rounded-2xl bg-slate-800/50 border border-slate-700/50 hover:bg-slate-700/60 hover:border-indigo-500/40 transition h-24">
+    <div class="text-2xl text-indigo-300 mb-1"><i class="fa-solid fa-bookmark"></i></div>
+    <div class="text-xs font-medium text-slate-200">Bookmark</div>
   </a>
-
-  <a href="/notifications" class="group bg-slate-800/50 hover:bg-slate-700 border border-slate-700/50 hover:border-fuchsia-500/40 rounded-xl p-4 transition-all">
-    <div class="text-2xl mb-1">🔔</div>
-    <div class="font-semibold text-white group-hover:text-fuchsia-300 transition">Notifikasi</div>
-    <div class="text-xs text-slate-400">Pesan terbaru</div>
+  <a href="/notifications" class="flex flex-col items-center justify-center p-3 rounded-2xl bg-slate-800/50 border border-slate-700/50 hover:bg-slate-700/60 hover:border-indigo-500/40 transition h-24">
+    <div class="text-2xl text-indigo-300 mb-1"><i class="fa-solid fa-bell"></i></div>
+    <div class="text-xs font-medium text-slate-200">Notifikasi</div>
   </a>
 </div>
 
-<!-- ====== 3. MENU LAINNYA (GRID 2-3 KOLOM, BERSIH) ====== -->
-<section>
-  <div class="flex items-center gap-2 mb-4">
-    <span class="text-sm font-medium text-slate-300">📌 Layanan Lainnya</span>
-    <span class="flex-1 border-t border-slate-700/50"></span>
+<!-- ====== BELI PAKET (List dari sections) ====== -->
+<div class="mb-4">
+  <div class="flex items-center gap-2 mb-3">
+    <i class="fa-solid fa-cart-shopping text-slate-400"></i>
+    <span class="text-xs uppercase tracking-wider text-slate-400 font-semibold">BELI PAKET</span>
   </div>
   
-  <div class="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-4 gap-3">
-    <a href="/hot" class="flex items-center gap-3 p-3 rounded-lg bg-slate-800/30 border border-slate-700/30 hover:bg-slate-700/50 hover:border-indigo-500/40 transition">
-      <span class="text-2xl">🔥</span>
-      <div>
-        <div class="text-sm font-medium">Hot Deals</div>
-        <div class="text-xs text-slate-500">Promo terbaru</div>
-      </div>
-    </a>
-    <a href="/purchase/family-loop" class="flex items-center gap-3 p-3 rounded-lg bg-slate-800/30 border border-slate-700/30 hover:bg-slate-700/50 hover:border-indigo-500/40 transition">
-      <span class="text-2xl">🔁</span>
-      <div>
-        <div class="text-sm font-medium">Loop Family</div>
-        <div class="text-xs text-slate-500">Paket keluarga</div>
-      </div>
-    </a>
-    <a href="/family-plan" class="flex items-center gap-3 p-3 rounded-lg bg-slate-800/30 border border-slate-700/30 hover:bg-slate-700/50 hover:border-indigo-500/40 transition">
-      <span class="text-2xl">🏠</span>
-      <div>
-        <div class="text-sm font-medium">Akrab</div>
-        <div class="text-xs text-slate-500">Family Plan</div>
-      </div>
-    </a>
-    <a href="/circle" class="flex items-center gap-3 p-3 rounded-lg bg-slate-800/30 border border-slate-700/30 hover:bg-slate-700/50 hover:border-indigo-500/40 transition">
-      <span class="text-2xl">⭕</span>
-      <div>
-        <div class="text-sm font-medium">Circle</div>
-        <div class="text-xs text-slate-500">Komunitas</div>
-      </div>
-    </a>
-    <a href="/store/packages" class="flex items-center gap-3 p-3 rounded-lg bg-slate-800/30 border border-slate-700/30 hover:bg-slate-700/50 hover:border-indigo-500/40 transition">
-      <span class="text-2xl">🛒</span>
-      <div>
-        <div class="text-sm font-medium">Toko</div>
-        <div class="text-xs text-slate-500">Cari paket</div>
-      </div>
-    </a>
-    <a href="/register" class="flex items-center gap-3 p-3 rounded-lg bg-slate-800/30 border border-slate-700/30 hover:bg-slate-700/50 hover:border-indigo-500/40 transition">
-      <span class="text-2xl">📝</span>
-      <div>
-        <div class="text-sm font-medium">Register</div>
-        <div class="text-xs text-slate-500">Aktivasi nomor</div>
-      </div>
-    </a>
-    <a href="/validate-msisdn" class="flex items-center gap-3 p-3 rounded-lg bg-slate-800/30 border border-slate-700/30 hover:bg-slate-700/50 hover:border-indigo-500/40 transition">
-      <span class="text-2xl">✅</span>
-      <div>
-        <div class="text-sm font-medium">Validate</div>
-        <div class="text-xs text-slate-500">Validasi MSISDN</div>
-      </div>
-    </a>
-    <a href="/accounts" class="flex items-center gap-3 p-3 rounded-lg bg-slate-800/30 border border-slate-700/30 hover:bg-slate-700/50 hover:border-indigo-500/40 transition">
-      <span class="text-2xl">👤</span>
-      <div>
-        <div class="text-sm font-medium">Akun</div>
-        <div class="text-xs text-slate-500">Pengaturan</div>
-      </div>
-    </a>
-  </div>
-</section>
-
-<!-- ====== (OPSIONAL) AKTIVITAS TERBARU ====== -->
-<!-- Jika kamu punya data aktivitas, kamu bisa uncomment bagian ini dan loop pakai data backend -->
-<!--
-<div class="mt-8 bg-slate-800/40 border border-slate-700/40 rounded-xl p-5">
-  <div class="flex items-center justify-between mb-3">
-    <h3 class="font-medium text-white flex items-center gap-2">📌 Aktivitas Terbaru</h3>
-    <a href="/transactions" class="text-xs text-indigo-400 hover:text-indigo-300">Lihat semua →</a>
-  </div>
-  <div class="space-y-2">
-    <div class="flex items-center justify-between p-3 bg-slate-800/60 rounded-lg border border-slate-700/30">
-      <div class="flex items-center gap-3">
-        <span class="text-lg">📦</span>
-        <div>
-          <div class="text-sm text-slate-200">Paket 10GB</div>
-          <div class="text-xs text-slate-500">15 menit lalu</div>
-        </div>
-      </div>
-      <span class="text-emerald-400 text-sm font-medium">+10 GB</span>
-    </div>
+  <div class="grid grid-cols-2 gap-3">
+    {% for section in sections %}
+      {% if section.group == 'Beli Paket' %}
+        {% for item in section.items %}
+          <a href="{{ item.href }}" class="group flex items-center gap-3 p-3 rounded-xl bg-slate-800/40 border border-slate-700/40 hover:bg-slate-700/50 hover:border-indigo-500/40 transition">
+            <div class="text-lg text-slate-400 group-hover:text-indigo-300 transition">
+              <!-- Mapping icon FontAwesome berdasarkan label -->
+              {% if 'Hot' in item.label and 'Hot-2' not in item.label %}
+                <i class="fa-solid fa-fire"></i>
+              {% elif 'Hot-2' in item.label %}
+                <i class="fa-solid fa-fire"></i><i class="fa-solid fa-fire ml-1"></i>
+              {% elif 'By Option' in item.label %}
+                <i class="fa-solid fa-list-ul"></i>
+              {% elif 'By Family' in item.label %}
+                <i class="fa-solid fa-users"></i>
+              {% elif 'Loop Family' in item.label %}
+                <i class="fa-solid fa-arrows-rotate"></i>
+              {% elif 'Bookmark' in item.label %}
+                <i class="fa-solid fa-bookmark"></i>
+              {% else %}
+                <i class="fa-solid fa-gift"></i>
+              {% endif %}
+            </div>
+            <div class="text-sm font-medium text-slate-200 group-hover:text-white transition">
+              {{ item.label|replace('<svg', '')|replace('</svg>', '')|safe }}
+            </div>
+          </a>
+        {% endfor %}
+      {% endif %}
+    {% endfor %}
   </div>
 </div>
--->
+
+<!-- ====== KOMUNITAS & LAINNYA (Opsional, sesuai foto) ====== -->
+<div class="grid grid-cols-2 gap-3">
+  <a href="/family-plan" class="group flex items-center gap-3 p-3 rounded-xl bg-slate-800/40 border border-slate-700/40 hover:bg-slate-700/50 hover:border-indigo-500/40 transition">
+    <div class="text-lg text-slate-400 group-hover:text-indigo-300"><i class="fa-solid fa-people-group"></i></div>
+    <div class="text-sm font-medium text-slate-200 group-hover:text-white">Akrab</div>
+  </a>
+  <a href="/packages/my" class="group flex items-center gap-3 p-3 rounded-xl bg-slate-800/40 border border-slate-700/40 hover:bg-slate-700/50 hover:border-indigo-500/40 transition">
+    <div class="text-lg text-slate-400 group-hover:text-indigo-300"><i class="fa-solid fa-clock"></i></div>
+    <div class="text-sm font-medium text-slate-200 group-hover:text-white">Masa Aktif</div>
+  </a>
+</div>
+
+<!-- Catatan: Untuk menambahkan Circle atau yang lain, bisa diatur di bawah atau menggunakan loop section lain -->
 
 {% endblock %}
