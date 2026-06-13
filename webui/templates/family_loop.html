@@ -1,33 +1,72 @@
 {% extends "base.html" %}
 {% block title %}Loop Beli Family · me-cli{% endblock %}
 {% block content %}
+
 <div class="max-w-md mx-auto">
-  <div class="card">
-    <h1 class="text-xl font-bold mb-3">🔁 Loop Beli Family</h1>
-    <p class="text-xs text-slate-400 mb-3">Beli berurutan semua opsi dalam satu family code. Pakai metode <b>balance</b>.</p>
-    <form action="/purchase/family-loop/start" method="post" class="space-y-3"
-          data-confirm="Loop bakal beli SEMUA opsi paket di family <span class='font-mono text-amber-300'>{field:family_code}</span> pakai metode <b>Pulsa</b>, mulai dari opsi #{field:start_from}. Pastiin saldo pulsa cukup banyak — tiap opsi yang sukses bakal dipotong dari saldo lo."
-          data-confirm-title="⚠️ Loop Pembelian — Yakin?"
+  <!-- Kartu Utama -->
+  <div class="bg-slate-800/50 border border-slate-700/50 rounded-xl p-6 shadow-lg">
+    
+    <!-- Header -->
+    <div class="flex items-center gap-3 mb-4">
+      <div class="text-3xl">🔁</div>
+      <div>
+        <h1 class="text-2xl font-bold text-white">Loop Beli Family</h1>
+        <p class="text-sm text-slate-400 mt-1">Beli berurutan semua opsi dalam satu family code.</p>
+      </div>
+    </div>
+
+    <!-- Informasi Penting -->
+    <div class="bg-amber-500/10 border border-amber-500/30 rounded-lg p-3 mb-4 text-sm text-amber-200">
+      <div class="flex items-start gap-2">
+        <span class="text-lg">⚠️</span>
+        <div>
+          <p class="font-medium">Pastikan saldo pulsa cukup.</p>
+          <p class="text-xs text-amber-200/70 mt-1">Metode pembayaran: <b>Balance / Pulsa</b>. Setiap opsi yang sukses akan dipotong dari saldo kamu.</p>
+        </div>
+      </div>
+    </div>
+
+    <!-- Formulir -->
+    <form action="/purchase/family-loop/start" method="post" class="space-y-4"
+          data-confirm="Loop akan membeli <b>SEMUA</b> opsi paket di family <span class='font-mono text-amber-300'>{field:family_code}</span> menggunakan metode <b>Pulsa</b>, dimulai dari opsi ke-<b>{field:start_from}</b>. Pastikan saldo pulsa cukup — setiap opsi yang berhasil akan dipotong dari saldo Anda."
+          data-confirm-title="⚠️ Konfirmasi Loop Pembelian"
           data-confirm-variant="warning"
           data-confirm-ok="Mulai Loop">
+      
+      <!-- Family Code -->
       <div>
-        <label class="label">Family Code</label>
-        <input class="form-input font-mono" type="text" name="family_code" value="{{ family_code }}" required>
+        <label class="block text-xs text-slate-400 mb-1">Family Code <span class="text-red-400">*</span></label>
+        <input class="w-full bg-slate-800 border border-slate-700 rounded-lg px-3 py-2.5 text-sm font-mono focus:border-indigo-500 focus:outline-none transition" 
+               type="text" name="family_code" value="{{ family_code }}" placeholder="xxxxxxxx-xxxx-..." required>
       </div>
+
+      <!-- Start From -->
       <div>
-        <label class="label">Mulai dari opsi ke-</label>
-        <input class="form-input" type="number" name="start_from" value="1" min="1">
+        <label class="block text-xs text-slate-400 mb-1">Mulai dari opsi ke-</label>
+        <input class="w-full bg-slate-800 border border-slate-700 rounded-lg px-3 py-2.5 text-sm focus:border-indigo-500 focus:outline-none transition" 
+               type="number" name="start_from" value="1" min="1">
       </div>
+
+      <!-- Delay -->
       <div>
-        <label class="label">Delay antar pembelian (detik)</label>
-        <input class="form-input" type="number" name="delay_seconds" value="0" min="0" max="60">
+        <label class="block text-xs text-slate-400 mb-1">Delay antar pembelian (detik)</label>
+        <input class="w-full bg-slate-800 border border-slate-700 rounded-lg px-3 py-2.5 text-sm focus:border-indigo-500 focus:outline-none transition" 
+               type="number" name="delay_seconds" value="0" min="0" max="60">
+        <p class="text-xs text-slate-500 mt-1">Rekomendasi: 1-3 detik untuk menghindari rate limit.</p>
       </div>
-      <label class="flex items-center gap-2 text-sm">
-        <input type="checkbox" name="use_decoy" value="true">
-        Pakai decoy
-      </label>
-      <button class="btn btn-primary w-full" type="submit">Mulai</button>
+
+      <!-- Decoy Checkbox -->
+      <div class="flex items-center gap-2 py-1">
+        <input type="checkbox" name="use_decoy" value="true" id="use_decoy" class="accent-indigo-500 w-4 h-4">
+        <label for="use_decoy" class="text-sm text-slate-300 cursor-pointer">Pakai decoy (dummy package)</label>
+      </div>
+
+      <!-- Tombol Submit -->
+      <button class="w-full px-4 py-3 bg-indigo-600 hover:bg-indigo-500 text-white font-medium rounded-xl transition shadow-lg shadow-indigo-900/30 flex items-center justify-center gap-2" type="submit">
+        <span>🚀</span> Mulai Loop
+      </button>
     </form>
   </div>
 </div>
+
 {% endblock %}
