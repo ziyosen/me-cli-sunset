@@ -51,46 +51,52 @@
   {% else %}
   <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
     {% for r in cat.redeem_items %}
-    {% set is_link = r.href is defined and r.href %}
-    
-    <{% if is_link %}a href="{{ r.href }}"{% else %}div{% endif %} 
-       class="group bg-slate-800/50 {% if is_link %}hover:bg-slate-700 border border-slate-700/50 hover:border-emerald-500/40 transition-all{% else %}border border-slate-700/50 opacity-80{% endif %} rounded-xl p-4 flex gap-3">
+    <div class="group bg-slate-800/50 hover:bg-slate-700 border border-slate-700/50 hover:border-emerald-500/40 transition-all rounded-xl p-4 flex flex-col gap-3">
       
-      <!-- Icon -->
-      <div class="shrink-0">
-        {% if r.icon %}
-          <img src="{{ r.icon }}" alt="" class="w-14 h-14 rounded-lg bg-slate-800 border border-slate-700/50 object-contain">
-        {% else %}
-          <div class="w-14 h-14 rounded-lg bg-emerald-500/10 border border-emerald-500/30 flex items-center justify-center text-2xl">
-            🎁
+      <!-- Ikon & Konten -->
+      <div class="flex gap-3">
+        <div class="shrink-0">
+          {% if r.icon %}
+            <img src="{{ r.icon }}" alt="" class="w-14 h-14 rounded-lg bg-slate-800 border border-slate-700/50 object-contain">
+          {% else %}
+            <div class="w-14 h-14 rounded-lg bg-emerald-500/10 border border-emerald-500/30 flex items-center justify-center text-2xl">
+              🎁
+            </div>
+          {% endif %}
+        </div>
+
+        <div class="min-w-0 flex-1">
+          <div class="font-medium text-white line-clamp-2">{{ r.name }}</div>
+          {% if r.valid_until %}
+          <div class="text-xs text-slate-400 mt-1 flex items-center gap-1">
+            <span>⏱️</span> s/d {{ r.valid_until }}
           </div>
+          {% endif %}
+        </div>
+      </div>
+
+      <!-- ====== FORMULIR KLAIM & INPUT MANUAL ====== -->
+      <div class="mt-2">
+        {% if r.href %}
+        <form action="{{ r.href }}" method="post" class="space-y-2" 
+              data-confirm="Yakin ingin mengklaim <b>{{ r.name }}</b>?">
+          <div class="flex items-center gap-2">
+            <input type="number" name="custom_redemption_amount" min="0" 
+                   placeholder="Nominal/Poin" value="{{ r.price or 0 }}"
+                   class="flex-1 bg-slate-800 border border-slate-700 rounded-lg px-3 py-2 text-sm focus:border-indigo-500 focus:outline-none transition">
+            <button type="submit" class="px-4 py-2 bg-emerald-600 hover:bg-emerald-500 text-white text-sm font-medium rounded-lg transition">
+              {{ r.action_type }}
+            </button>
+          </div>
+        </form>
+        {% else %}
+        <span class="inline-block text-[10px] px-2 py-0.5 rounded-full bg-amber-500/20 text-amber-300 border border-amber-500/30">
+          {{ r.action_type }} (tidak didukung)
+        </span>
         {% endif %}
       </div>
 
-      <!-- Content -->
-      <div class="min-w-0 flex-1">
-        <div class="font-medium text-white {% if is_link %}group-hover:text-emerald-300 transition{% endif %} line-clamp-2">
-          {{ r.name }}
-        </div>
-        {% if r.valid_until %}
-        <div class="text-xs text-slate-400 mt-1 flex items-center gap-1">
-          <span>⏱️</span> s/d {{ r.valid_until }}
-        </div>
-        {% endif %}
-        {% if r.action_type %}
-          <span class="inline-block text-[10px] px-2 py-0.5 rounded-full mt-2
-            {% if is_link %}
-              bg-emerald-500/20 text-emerald-300 border border-emerald-500/30
-            {% else %}
-              bg-amber-500/20 text-amber-300 border border-amber-500/30
-            {% endif %}">
-            {{ r.action_type }}
-            {% if not is_link %}(tidak didukung){% endif %}
-          </span>
-        {% endif %}
-      </div>
-      
-    </{% if is_link %}a{% else %}div{% endif %}>
+    </div>
     {% endfor %}
   </div>
   {% endif %}
