@@ -1,19 +1,63 @@
 {% extends "base.html" %}
 {% block title %}Notifikasi · me-cli{% endblock %}
 {% block content %}
-<h1 class="text-xl font-bold mb-4">🔔 Notifikasi</h1>
-{% if not items %}<div class="card text-slate-400">Tidak ada notifikasi.</div>{% endif %}
-<div class="space-y-2">
-{% for n in items %}
-<a class="card block" href="/notifications/{{ n.notification_id or n.id or '' }}">
-  <div class="font-medium">{{ n.title or n.subject or n.name or "-" }}</div>
-  <div class="text-sm text-slate-300 mt-1">{{ n.content or n.body or n.description or "" }}</div>
-  <div class="text-xs text-slate-500 mt-1">{{ n.created_at or n.date or "" }}</div>
-</a>
-{% endfor %}
+
+<!-- ====== HEADER ====== -->
+<div class="flex flex-col sm:flex-row sm:items-center justify-between mb-6">
+  <div>
+    <h1 class="text-2xl font-bold text-white flex items-center gap-2">
+      <span>🔔</span> Notifikasi
+    </h1>
+    <p class="text-sm text-slate-400 mt-1">Daftar notifikasi dari sistem.</p>
+  </div>
+  <a href="/notifications" class="inline-flex items-center gap-1 text-xs text-slate-400 hover:text-white transition px-3 py-1.5 bg-slate-800/50 rounded-lg border border-slate-700/50 mt-2 sm:mt-0">
+    <span>↻</span> Refresh
+  </a>
 </div>
-<details class="mt-4 card">
-  <summary class="cursor-pointer text-slate-400">Raw</summary>
-  <pre class="text-xs overflow-x-auto bg-slate-950 p-2 rounded mt-2">{{ raw | tojson(indent=2) }}</pre>
+
+<!-- ====== EMPTY STATE ====== -->
+{% if not items %}
+<div class="bg-slate-800/50 border border-slate-700/50 rounded-xl p-8 text-center text-slate-400">
+  <div class="text-4xl mb-3">📭</div>
+  <p class="text-base font-medium text-slate-300">Tidak ada notifikasi.</p>
+  <p class="text-sm mt-1">Notifikasi akan muncul di sini jika ada.</p>
+</div>
+{% endif %}
+
+<!-- ====== NOTIFICATION LIST ====== -->
+<div class="space-y-3">
+  {% for n in items %}
+  <a href="/notifications/{{ n.notification_id or n.id or '' }}" 
+     class="group bg-slate-800/50 hover:bg-slate-700 border border-slate-700/50 hover:border-indigo-500/40 rounded-xl p-4 transition-all block">
+    
+    <div class="flex flex-col sm:flex-row sm:items-start justify-between gap-2">
+      <div class="min-w-0 flex-1">
+        <div class="font-medium text-white group-hover:text-indigo-300 transition">
+          {{ n.title or n.subject or n.name or "-" }}
+        </div>
+        <div class="text-sm text-slate-300 mt-1 line-clamp-2">
+          {{ n.content or n.body or n.description or "" }}
+        </div>
+        <div class="text-xs text-slate-500 mt-2 flex items-center gap-2">
+          <span>🕐</span>
+          {{ n.created_at or n.date or "" }}
+        </div>
+      </div>
+      <div class="text-slate-400 group-hover:text-white text-lg shrink-0 sm:mt-0 mt-1">
+        ›
+      </div>
+    </div>
+    
+  </a>
+  {% endfor %}
+</div>
+
+<!-- ====== RAW RESPONSE (debug) ====== -->
+<details class="mt-6 bg-slate-800/30 border border-slate-700/50 rounded-xl p-4">
+  <summary class="cursor-pointer text-sm text-slate-400 hover:text-slate-300 flex items-center gap-2">
+    <span>📄</span> Raw response (debug)
+  </summary>
+  <pre class="text-xs overflow-x-auto bg-slate-950 p-3 rounded mt-3 border border-slate-800/50">{{ raw | tojson(indent=2) }}</pre>
 </details>
+
 {% endblock %}
