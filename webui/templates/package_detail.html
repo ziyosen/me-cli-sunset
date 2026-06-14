@@ -1,5 +1,5 @@
 {% extends "base.html" %}
-{% block title %}{{ pkg.package_option.name }} · Webui-XL{% endblock %}
+{% block title %}{{ pkg.package_option.name }} · me-cli{% endblock %}
 {% block content %}
 {% set opt = pkg.package_option %}
 {% set fam = pkg.package_family %}
@@ -15,7 +15,6 @@
       <h1 class="text-xl font-bold">{{ opt.name }}</h1>
       <div class="text-2xl font-bold text-indigo-300 mt-2">{{ opt.price | rp }}</div>
       <div class="text-sm text-slate-400 mt-1">Masa aktif: {{ opt.validity }}</div>
-      {% if active_expiry_display %}<div class="text-sm text-slate-400 mt-1">Aktif s/d {{ active_expiry_display }}</div>{% endif %}
       {% if opt.point %}<div class="text-sm text-slate-400">Point: {{ opt.point }}</div>{% endif %}
     </div>
     <form action="/bookmark/add" method="post" class="shrink-0">
@@ -26,7 +25,7 @@
       <input type="hidden" name="option_name" value="{{ opt.name }}">
       <input type="hidden" name="order" value="{{ opt.get('order', 0) }}">
       <input type="hidden" name="package_option_code" value="{{ option_code }}">
-      <button type="submit" class="btn btn-secondary" title="Bookmark"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="inline-block mr-1"><path d="M19 21l-7-5-7 5V5a2 2 0 0 1 2-2h10a2 2 0 0 1 2 2z"></path></svg></button>
+      <button type="submit" class="btn btn-secondary" title="Bookmark">🔖</button>
     </form>
   </div>
   <div class="grid grid-cols-1 sm:grid-cols-2 gap-3 mt-4 text-xs min-w-0 w-full">
@@ -48,7 +47,7 @@
   <h2 class="font-bold mb-2">Benefit</h2>
   <ul class="space-y-2 text-sm">
     {% for b in opt.benefits %}
-    <li class="pb-2 last:border-0">
+    <li class="border-b border-slate-800 pb-2 last:border-0">
       <div class="font-medium">{{ b.name }}</div>
       <div class="text-xs text-slate-400">
         {% if b.data_type == 'DATA' and b.total %}{{ b.total | bytes }}
@@ -56,7 +55,7 @@
         {% elif b.data_type == 'TEXT' and b.total %}{{ b.total }} SMS
         {% elif b.total %}{{ b.total }} ({{ b.data_type }})
         {% endif %}
-        {% if b.is_unlimited %} · <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="inline-block"><path d="M12 12c-2-2.67-4-4-6-4a4 4 0 1 0 0 8c2 0 4-1.33 6-4zm0 0c2 2.67 4 4 6 4a4 4 0 1 0 0-8c-2 0-4 1.33-6 4z"></path></svg> Unlimited{% endif %}
+        {% if b.is_unlimited %} · ♾️ Unlimited{% endif %}
       </div>
     </li>
     {% endfor %}
@@ -109,13 +108,6 @@
         {% endif %}
       </select>
     </div>
-
-    <!-- ====== TAMBAHAN: INPUT NOMINAL MANUAL UNTUK BALANCE & QRIS ====== -->
-    <div id="manual-nominal" style="display:none;">
-      <label class="label">Nominal (Rp) — kosongkan untuk harga paket</label>
-      <input class="form-input" type="number" name="custom_amount" min="0" placeholder="{{ opt.price }}">
-    </div>
-
     <div id="wallet-num" style="display:none">
       <label class="label">Nomor E-Wallet (08...)</label>
       <input class="form-input" type="text" name="wallet_number" pattern="08\d{7,12}">
@@ -125,6 +117,13 @@
       <input class="form-input" type="number" name="qris_amount" min="0" placeholder="(opsional)">
       <p class="text-xs text-slate-500 mt-1">QRIS decoy butuh amount yang server terima (Bizz-err.Amount.Total). Coba angka di sekitar harga paket utama.</p>
     </div>
+
+    <!-- ====== TAMBAHAN: INPUT NOMINAL MANUAL UNTUK BALANCE & QRIS ====== -->
+    <div id="manual-nominal" style="display:none">
+      <label class="label">Nominal Manual (Rp) — kosongkan untuk harga paket</label>
+      <input class="form-input" type="number" name="custom_amount" min="0" placeholder="{{ opt.price }}">
+    </div>
+
     <button class="btn btn-primary w-full" type="button" data-confirm-trigger>Bayar</button>
   </form>
   <script>
@@ -132,8 +131,8 @@
       var methodSel = document.querySelector('select[name=method]');
       var walletInput = document.querySelector('input[name=wallet_number]');
       var qrisInput = document.querySelector('input[name=qris_amount]');
-      var manualInput = document.querySelector('input[name="custom_amount"]');
-      var manualDiv = document.getElementById('manual-nominal');
+      var manualNominalDiv = document.getElementById('manual-nominal');
+      var customAmountInput = document.querySelector('input[name="custom_amount"]');
 
       function syncMethodFields() {
         var v = methodSel.value;
@@ -154,15 +153,14 @@
           if (!isQrisDecoy) qrisInput.value = '';
         }
 
-        // ====== TAMBAHAN: Tampilkan input manual untuk Balance & QRIS biasa ======
+        // ====== TAMBAHAN: Tampilkan input manual untuk Balance dan QRIS biasa ======
         var isManualNominal = (v === 'balance' || v === 'qris');
-        manualDiv.style.display = isManualNominal ? 'block' : 'none';
-        if (manualInput) {
-          manualInput.disabled = !isManualNominal;
-          if (!isManualNominal) manualInput.value = '';
+        manualNominalDiv.style.display = isManualNominal ? 'block' : 'none';
+        if (customAmountInput) {
+          customAmountInput.disabled = !isManualNominal;
+          if (!isManualNominal) customAmountInput.value = '';
         }
       }
-
       methodSel.addEventListener('change', syncMethodFields);
       syncMethodFields();
     })();
