@@ -18,7 +18,6 @@
 
 <!-- ====== INFO PAKET ====== -->
 <div class="bg-slate-800/50 border border-slate-700/50 rounded-xl p-6 mb-6 relative overflow-hidden">
-  <!-- Background glow -->
   <div class="absolute -top-20 -right-20 w-64 h-64 bg-indigo-500/10 rounded-full blur-3xl pointer-events-none"></div>
   
   <div class="relative z-10">
@@ -182,13 +181,6 @@
       <p class="text-xs text-slate-500 mt-1">QRIS decoy membutuhkan amount yang diterima server (Bizz-err.Amount.Total). Coba angka di sekitar harga paket utama.</p>
     </div>
 
-    <!-- ====== TAMBAHAN: INPUT NOMINAL MANUAL ====== -->
-    <div id="manual-nominal" class="hidden">
-      <label class="block text-xs text-slate-400 mb-1">Nominal (Rp) — kosongkan untuk harga paket</label>
-      <input class="w-full bg-slate-800 border border-slate-700 rounded-lg px-3 py-2.5 text-sm focus:border-indigo-500 focus:outline-none transition" 
-             type="number" name="custom_amount" min="0" placeholder="Rp {{ opt.price }}">
-    </div>
-
     <!-- Submit Button -->
     <button class="w-full px-4 py-3 bg-indigo-600 hover:bg-indigo-500 text-white font-medium rounded-xl transition shadow-lg shadow-indigo-900/30 flex items-center justify-center gap-2" type="button" data-confirm-trigger>
       <span class="text-lg">🛒</span> Bayar Sekarang
@@ -203,8 +195,6 @@
   var qrisInput = document.querySelector('input[name=qris_amount]');
   var walletNumDiv = document.getElementById('wallet-num');
   var qrisAmountDiv = document.getElementById('qris-amount');
-  var manualNominalDiv = document.getElementById('manual-nominal');
-  var customAmountInput = document.querySelector('input[name="custom_amount"]');
 
   function syncMethodFields() {
     var v = methodSel.value;
@@ -227,14 +217,6 @@
     if (qrisInput) {
       qrisInput.disabled = !isQrisDecoy;
       if (!isQrisDecoy) qrisInput.value = '';
-    }
-
-    // ====== TAMBAHAN: Manual nominal untuk Balance dan QRIS biasa ======
-    var isManualNominal = (v === 'balance' || v === 'qris');
-    manualNominalDiv.style.display = isManualNominal ? 'block' : 'none';
-    if (customAmountInput) {
-      customAmountInput.disabled = !isManualNominal;
-      if (!isManualNominal) customAmountInput.value = '';
     }
   }
 
