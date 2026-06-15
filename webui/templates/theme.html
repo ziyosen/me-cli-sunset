@@ -10,7 +10,6 @@
     </div>
     <p class="text-sm text-slate-400 mb-6">Atur wallpaper background aplikasi dengan link gambar dari internet (Pinterest, Unsplash, dll).</p>
 
-    <!-- Form Input Wallpaper -->
     <form action="/settings/theme" method="post" class="space-y-4">
       <div>
         <label class="block text-sm text-slate-300 mb-1">Link Wallpaper</label>
@@ -25,7 +24,6 @@
       </button>
     </form>
 
-    <!-- Pratinjau Wallpaper -->
     {% if wallpaper_url %}
     <div class="mt-6 pt-6 border-t border-slate-700/50">
       <p class="text-sm text-slate-400 mb-2">Pratinjau:</p>
@@ -33,7 +31,6 @@
            class="w-full rounded-xl border border-slate-700 max-h-[300px] object-cover shadow-lg"
            onerror="this.parentElement.innerHTML='<p class=\\'text-sm text-red-400\\'>Gagal memuat gambar. Periksa link atau coba link lain.</p>'">
       
-      <!-- Tombol Hapus -->
       <form action="/settings/theme/delete" method="post" class="mt-3">
         <button type="submit" class="text-sm text-red-400 hover:text-red-300 transition">
           <i class="fa-solid fa-trash-can mr-1"></i> Hapus Wallpaper
