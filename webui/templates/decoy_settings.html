@@ -2,6 +2,120 @@
 {% block title %}Decoy Settings · Webui-XL{% endblock %}
 {% block content %}
 
+<!-- ====== MACROS (Ditempatkan di paling atas agar terbaca) ====== -->
+{% macro decoy_fields(d, include_base_method=False) %}
+<div class="grid grid-cols-1 sm:grid-cols-2 gap-4 text-sm">
+  <div class="sm:col-span-2">
+    <label class="block text-xs text-slate-400 mb-1">Family Name (label)</label>
+    <input class="w-full bg-slate-800 border border-slate-700 rounded-lg px-3 py-2 text-sm focus:border-indigo-500 focus:outline-none" 
+           name="family_name" value="{{ d.family_name or '' }}" placeholder="XL PASS">
+  </div>
+  <div class="sm:col-span-2">
+    <label class="block text-xs text-slate-400 mb-1">Family Code (UUID) <span class="text-red-400">*</span></label>
+    <input class="w-full bg-slate-800 border border-slate-700 rounded-lg px-3 py-2 text-sm font-mono focus:border-indigo-500 focus:outline-none" 
+           name="family_code" value="{{ d.family_code or '' }}" placeholder="xxxxxxxx-xxxx-..." required>
+  </div>
+  <div class="sm:col-span-2">
+    <label class="block text-xs text-slate-400 mb-1">Variant Code (UUID) <span class="text-red-400">*</span></label>
+    <input class="w-full bg-slate-800 border border-slate-700 rounded-lg px-3 py-2 text-sm font-mono focus:border-indigo-500 focus:outline-none" 
+           name="variant_code" value="{{ d.variant_code or '' }}" placeholder="xxxxxxxx-xxxx-..." required>
+  </div>
+  <div>
+    <label class="block text-xs text-slate-400 mb-1">Variant Name</label>
+    <input class="w-full bg-slate-800 border border-slate-700 rounded-lg px-3 py-2 text-sm focus:border-indigo-500 focus:outline-none" 
+           name="variant_name" value="{{ d.variant_name or '' }}">
+  </div>
+  <div>
+    <label class="block text-xs text-slate-400 mb-1">Option Name</label>
+    <input class="w-full bg-slate-800 border border-slate-700 rounded-lg px-3 py-2 text-sm focus:border-indigo-500 focus:outline-none" 
+           name="option_name" value="{{ d.option_name or '' }}">
+  </div>
+  <div>
+    <label class="block text-xs text-slate-400 mb-1">Order # <span class="text-red-400">*</span></label>
+    <input class="w-full bg-slate-800 border border-slate-700 rounded-lg px-3 py-2 text-sm focus:border-indigo-500 focus:outline-none" 
+           type="number" name="order" value="{{ d.order or 1 }}" min="1" required>
+  </div>
+  <div>
+    <label class="block text-xs text-slate-400 mb-1">Price (Rp) <span class="text-red-400">*</span></label>
+    <input class="w-full bg-slate-800 border border-slate-700 rounded-lg px-3 py-2 text-sm focus:border-indigo-500 focus:outline-none" 
+           type="number" name="price" value="{{ d.price or 0 }}" min="0" required>
+  </div>
+  <div>
+    <label class="block text-xs text-slate-400 mb-1">Migration Type</label>
+    <select class="w-full bg-slate-800 border border-slate-700 rounded-lg px-3 py-2 text-sm focus:border-indigo-500 focus:outline-none" 
+            name="migration_type">
+      {% for opt in ['NONE','PRE_TO_PRIOH','PRIOH_TO_PRIO','PRIO_TO_PRIOH'] %}
+        <option value="{{ opt }}" {% if (d.migration_type or 'NONE') == opt %}selected{% endif %}>{{ opt }}</option>
+      {% endfor %}
+    </select>
+  </div>
+  <div class="flex items-center">
+    <label class="flex items-center gap-2 text-sm text-slate-300 cursor-pointer">
+      <input type="checkbox" name="is_enterprise" value="true" {% if d.is_enterprise %}checked{% endif %} class="accent-indigo-500">
+      Enterprise
+    </label>
+  </div>
+  {% if include_base_method %}
+  <div class="sm:col-span-2">
+    <label class="block text-xs text-slate-400 mb-1">Base Method <span class="text-red-400">*</span></label>
+    <select class="w-full bg-slate-800 border border-slate-700 rounded-lg px-3 py-2 text-sm focus:border-indigo-500 focus:outline-none" 
+            name="base_method">
+      <option value="balance" {% if d.base_method == 'balance' %}selected{% endif %}>Balance / Pulsa</option>
+      <option value="qris" {% if d.base_method == 'qris' %}selected{% endif %}>QRIS</option>
+    </select>
+  </div>
+  {% endif %}
+</div>
+{% endmacro %}
+
+{% macro decoy_editor(d, kind, key, include_base_method=False, label='') %}
+{% set tab_id = 'tab-' ~ kind ~ '-' ~ key %}
+<div class="mt-2">
+  <div class="flex items-center gap-2 border-b border-slate-700/70 mb-3" role="tablist">
+    <button type="button" data-tab="form" data-target="{{ tab_id }}" class="tab-btn px-3 py-1.5 text-xs font-medium rounded-t border-b-2 border-indigo-500 text-indigo-300 -mb-px transition">📝 Form</button>
+    <button type="button" data-tab="json" data-target="{{ tab_id }}" class="tab-btn px-3 py-1.5 text-xs font-medium rounded-t border-b-2 border-transparent text-slate-400 hover:text-slate-200 -mb-px transition">{} JSON</button>
+    <div class="ml-auto">
+      <button type="button" data-test="{{ kind }}/{{ key }}" data-test-target="test-{{ kind }}-{{ key }}" 
+              class="text-xs px-3 py-1.5 rounded bg-amber-500/15 text-amber-300 border border-amber-500/30 hover:bg-amber-500/25 transition flex items-center gap-1" data-no-loader>
+        <span>🧪</span> Test
+      </button>
+    </div>
+  </div>
+
+  <div id="test-{{ kind }}-{{ key }}" class="mb-3 hidden text-xs"></div>
+
+  <!-- FORM mode -->
+  <div data-pane="form" data-pane-of="{{ tab_id }}">
+    <form action="/settings/decoy/{% if kind == 'builtin' %}builtin{% else %}custom{% endif %}/{{ key }}" method="post"
+          data-confirm="Simpan perubahan untuk {{ label or key }}?"
+          data-confirm-title="Simpan?"
+          data-confirm-variant="primary"
+          data-confirm-ok="Simpan">
+      {{ decoy_fields(d, include_base_method=include_base_method) }}
+      <button class="w-full px-4 py-2.5 bg-indigo-600 hover:bg-indigo-500 text-white font-medium rounded-xl transition shadow-lg shadow-indigo-900/30 mt-4 flex items-center justify-center gap-2" type="submit">
+        <span>💾</span> Simpan (Form)
+      </button>
+    </form>
+  </div>
+
+  <!-- JSON mode -->
+  <div data-pane="json" data-pane-of="{{ tab_id }}" class="hidden">
+    <form action="/settings/decoy/raw/{{ kind }}/{{ key }}" method="post"
+          data-confirm="Replace seluruh isi file dengan JSON di textarea? Pastikan formatnya benar."
+          data-confirm-title="Simpan raw JSON?"
+          data-confirm-variant="warning"
+          data-confirm-ok="Simpan JSON">
+      <label class="block text-xs text-slate-400 mb-1">Raw JSON</label>
+      <textarea name="raw_json" rows="12" class="w-full bg-slate-900 border border-slate-700 rounded-lg px-3 py-2 text-xs font-mono leading-snug focus:border-indigo-500 focus:outline-none" spellcheck="false" required>{{ d | tojson(indent=4) }}</textarea>
+      <p class="text-xs text-slate-500 mt-1">Field minimal: family_code, variant_code, order, price{% if include_base_method %}, base_method (balance/qris){% endif %}.</p>
+      <button class="w-full px-4 py-2.5 bg-indigo-600 hover:bg-indigo-500 text-white font-medium rounded-xl transition shadow-lg shadow-indigo-900/30 mt-3 flex items-center justify-center gap-2" type="submit">
+        <span>💾</span> Simpan (JSON)
+      </button>
+    </form>
+  </div>
+</div>
+{% endmacro %}
+
 <!-- Header -->
 <div class="flex flex-col sm:flex-row sm:items-center justify-between mb-6">
   <div>
@@ -172,120 +286,6 @@
   <span class="text-slate-300">"Pulsa + Decoy ({nama})"</span> atau 
   <span class="text-slate-300">"QRIS + Decoy ({nama})"</span>.
 </div>
-
-<!-- ====== MACROS (ditempatkan di bawah agar bersih) ====== -->
-{% macro decoy_fields(d, include_base_method=False) %}
-<div class="grid grid-cols-1 sm:grid-cols-2 gap-4 text-sm">
-  <div class="sm:col-span-2">
-    <label class="block text-xs text-slate-400 mb-1">Family Name (label)</label>
-    <input class="w-full bg-slate-800 border border-slate-700 rounded-lg px-3 py-2 text-sm focus:border-indigo-500 focus:outline-none" 
-           name="family_name" value="{{ d.family_name or '' }}" placeholder="XL PASS">
-  </div>
-  <div class="sm:col-span-2">
-    <label class="block text-xs text-slate-400 mb-1">Family Code (UUID) <span class="text-red-400">*</span></label>
-    <input class="w-full bg-slate-800 border border-slate-700 rounded-lg px-3 py-2 text-sm font-mono focus:border-indigo-500 focus:outline-none" 
-           name="family_code" value="{{ d.family_code or '' }}" placeholder="xxxxxxxx-xxxx-..." required>
-  </div>
-  <div class="sm:col-span-2">
-    <label class="block text-xs text-slate-400 mb-1">Variant Code (UUID) <span class="text-red-400">*</span></label>
-    <input class="w-full bg-slate-800 border border-slate-700 rounded-lg px-3 py-2 text-sm font-mono focus:border-indigo-500 focus:outline-none" 
-           name="variant_code" value="{{ d.variant_code or '' }}" placeholder="xxxxxxxx-xxxx-..." required>
-  </div>
-  <div>
-    <label class="block text-xs text-slate-400 mb-1">Variant Name</label>
-    <input class="w-full bg-slate-800 border border-slate-700 rounded-lg px-3 py-2 text-sm focus:border-indigo-500 focus:outline-none" 
-           name="variant_name" value="{{ d.variant_name or '' }}">
-  </div>
-  <div>
-    <label class="block text-xs text-slate-400 mb-1">Option Name</label>
-    <input class="w-full bg-slate-800 border border-slate-700 rounded-lg px-3 py-2 text-sm focus:border-indigo-500 focus:outline-none" 
-           name="option_name" value="{{ d.option_name or '' }}">
-  </div>
-  <div>
-    <label class="block text-xs text-slate-400 mb-1">Order # <span class="text-red-400">*</span></label>
-    <input class="w-full bg-slate-800 border border-slate-700 rounded-lg px-3 py-2 text-sm focus:border-indigo-500 focus:outline-none" 
-           type="number" name="order" value="{{ d.order or 1 }}" min="1" required>
-  </div>
-  <div>
-    <label class="block text-xs text-slate-400 mb-1">Price (Rp) <span class="text-red-400">*</span></label>
-    <input class="w-full bg-slate-800 border border-slate-700 rounded-lg px-3 py-2 text-sm focus:border-indigo-500 focus:outline-none" 
-           type="number" name="price" value="{{ d.price or 0 }}" min="0" required>
-  </div>
-  <div>
-    <label class="block text-xs text-slate-400 mb-1">Migration Type</label>
-    <select class="w-full bg-slate-800 border border-slate-700 rounded-lg px-3 py-2 text-sm focus:border-indigo-500 focus:outline-none" 
-            name="migration_type">
-      {% for opt in ['NONE','PRE_TO_PRIOH','PRIOH_TO_PRIO','PRIO_TO_PRIOH'] %}
-        <option value="{{ opt }}" {% if (d.migration_type or 'NONE') == opt %}selected{% endif %}>{{ opt }}</option>
-      {% endfor %}
-    </select>
-  </div>
-  <div class="flex items-center">
-    <label class="flex items-center gap-2 text-sm text-slate-300 cursor-pointer">
-      <input type="checkbox" name="is_enterprise" value="true" {% if d.is_enterprise %}checked{% endif %} class="accent-indigo-500">
-      Enterprise
-    </label>
-  </div>
-  {% if include_base_method %}
-  <div class="sm:col-span-2">
-    <label class="block text-xs text-slate-400 mb-1">Base Method <span class="text-red-400">*</span></label>
-    <select class="w-full bg-slate-800 border border-slate-700 rounded-lg px-3 py-2 text-sm focus:border-indigo-500 focus:outline-none" 
-            name="base_method">
-      <option value="balance" {% if d.base_method == 'balance' %}selected{% endif %}>Balance / Pulsa</option>
-      <option value="qris" {% if d.base_method == 'qris' %}selected{% endif %}>QRIS</option>
-    </select>
-  </div>
-  {% endif %}
-</div>
-{% endmacro %}
-
-{% macro decoy_editor(d, kind, key, include_base_method=False, label='') %}
-{% set tab_id = 'tab-' ~ kind ~ '-' ~ key %}
-<div class="mt-2">
-  <div class="flex items-center gap-2 border-b border-slate-700/70 mb-3" role="tablist">
-    <button type="button" data-tab="form" data-target="{{ tab_id }}" class="tab-btn px-3 py-1.5 text-xs font-medium rounded-t border-b-2 border-indigo-500 text-indigo-300 -mb-px transition">📝 Form</button>
-    <button type="button" data-tab="json" data-target="{{ tab_id }}" class="tab-btn px-3 py-1.5 text-xs font-medium rounded-t border-b-2 border-transparent text-slate-400 hover:text-slate-200 -mb-px transition">{} JSON</button>
-    <div class="ml-auto">
-      <button type="button" data-test="{{ kind }}/{{ key }}" data-test-target="test-{{ kind }}-{{ key }}" 
-              class="text-xs px-3 py-1.5 rounded bg-amber-500/15 text-amber-300 border border-amber-500/30 hover:bg-amber-500/25 transition flex items-center gap-1" data-no-loader>
-        <span>🧪</span> Test
-      </button>
-    </div>
-  </div>
-
-  <div id="test-{{ kind }}-{{ key }}" class="mb-3 hidden text-xs"></div>
-
-  <!-- FORM mode -->
-  <div data-pane="form" data-pane-of="{{ tab_id }}">
-    <form action="/settings/decoy/{% if kind == 'builtin' %}builtin{% else %}custom{% endif %}/{{ key }}" method="post"
-          data-confirm="Simpan perubahan untuk {{ label or key }}?"
-          data-confirm-title="Simpan?"
-          data-confirm-variant="primary"
-          data-confirm-ok="Simpan">
-      {{ decoy_fields(d, include_base_method=include_base_method) }}
-      <button class="w-full px-4 py-2.5 bg-indigo-600 hover:bg-indigo-500 text-white font-medium rounded-xl transition shadow-lg shadow-indigo-900/30 mt-4 flex items-center justify-center gap-2" type="submit">
-        <span>💾</span> Simpan (Form)
-      </button>
-    </form>
-  </div>
-
-  <!-- JSON mode -->
-  <div data-pane="json" data-pane-of="{{ tab_id }}" class="hidden">
-    <form action="/settings/decoy/raw/{{ kind }}/{{ key }}" method="post"
-          data-confirm="Replace seluruh isi file dengan JSON di textarea? Pastikan formatnya benar."
-          data-confirm-title="Simpan raw JSON?"
-          data-confirm-variant="warning"
-          data-confirm-ok="Simpan JSON">
-      <label class="block text-xs text-slate-400 mb-1">Raw JSON</label>
-      <textarea name="raw_json" rows="12" class="w-full bg-slate-900 border border-slate-700 rounded-lg px-3 py-2 text-xs font-mono leading-snug focus:border-indigo-500 focus:outline-none" spellcheck="false" required>{{ d | tojson(indent=4) }}</textarea>
-      <p class="text-xs text-slate-500 mt-1">Field minimal: family_code, variant_code, order, price{% if include_base_method %}, base_method (balance/qris){% endif %}.</p>
-      <button class="w-full px-4 py-2.5 bg-indigo-600 hover:bg-indigo-500 text-white font-medium rounded-xl transition shadow-lg shadow-indigo-900/30 mt-3 flex items-center justify-center gap-2" type="submit">
-        <span>💾</span> Simpan (JSON)
-      </button>
-    </form>
-  </div>
-</div>
-{% endmacro %}
 
 <script>
 (function(){
