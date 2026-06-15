@@ -13,6 +13,7 @@ from fastapi.responses import HTMLResponse, Response
 from fastapi.staticfiles import StaticFiles
 from fastapi.templating import Jinja2Templates
 from starlette.middleware.base import BaseHTTPMiddleware
+from starlette.middleware.sessions import SessionMiddleware  # ← TAMBAHAN BARIS INI
 
 from webui.helpers import format_rp, format_ts, format_date, safe_html, humanize_bytes, public_error_message
 
@@ -109,6 +110,9 @@ class BasicAuthMiddleware(BaseHTTPMiddleware):
 def create_app() -> FastAPI:
     app = FastAPI(title="me-cli-sunset webui", docs_url=None, redoc_url=None, lifespan=lifespan)
 
+    # ====== TAMBAHAN: PASANG SESSION MIDDLEWARE ======
+    app.add_middleware(SessionMiddleware, secret_key=os.getenv("SESSION_SECRET", "fallback-key"))
+
     # New multi-tenant middleware (cookie session + per-user CWD chdir).
     # BasicAuth is now disabled; the webui session is the only auth layer.
     from webui.middleware import WebUIAuthMiddleware
@@ -149,7 +153,7 @@ def create_app() -> FastAPI:
     from webui.routes import decoy_settings as r_decoy_settings
     from webui.routes import webui_auth as r_webui_auth
     from webui.routes import monitoring as r_monitoring
-    from webui.routes import theme as r_theme  
+    from webui.routes import theme as r_theme  # ← TAMBAHAN BARIS INI
 
     app.include_router(r_webui_auth.router)
     app.include_router(r_dashboard.router)
@@ -166,7 +170,7 @@ def create_app() -> FastAPI:
     app.include_router(r_registration.router)
     app.include_router(r_decoy_settings.router)
     app.include_router(r_monitoring.router)
-    app.include_router(r_theme.router)  
+    app.include_router(r_theme.router)  # ← TAMBAHAN BARIS INI
 
     @app.exception_handler(404)
     async def not_found(request: Request, exc):
