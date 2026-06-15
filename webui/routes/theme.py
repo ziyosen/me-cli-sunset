@@ -5,6 +5,7 @@ router = APIRouter()
 
 @router.get("/settings/theme", response_class=HTMLResponse)
 async def theme_page(request: Request):
+    
     templates = request.app.state.templates
     wallpaper_url = request.session.get("wallpaper_url", "")
     return templates.TemplateResponse("settings/theme.html", {
